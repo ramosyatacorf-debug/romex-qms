@@ -26,6 +26,18 @@ export default function LoginPage() {
         {/* Left - Login form */}
         <div className="w-full lg:w-[42%] flex flex-col justify-center px-8 md:px-12 py-12">
           <div className="max-w-sm mx-auto w-full">
+            {/* Logo arriba del formulario */}
+            <div className="mb-8">
+              <Image
+                src="/logo_romex.jpg"
+                alt="RomEx Quality Management System"
+                width={140}
+                height={36}
+                className="object-contain"
+                priority
+              />
+            </div>
+
             <h1 className="text-3xl font-bold text-slate-800 tracking-tight mb-2">Login</h1>
             <p className="text-slate-500 text-sm mb-8 leading-relaxed">
               Welcome to log in to your background management system.
@@ -76,24 +88,12 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right - Illustration + Logo */}
+        {/* Right - Illustration */}
         <div className="hidden lg:flex flex-1 relative bg-gradient-to-br from-blue-50 via-blue-100/30 to-indigo-50 items-center justify-center overflow-hidden">
           <div className="absolute top-10 right-16 w-40 h-40 bg-blue-200/30 rounded-full blur-3xl" />
           <div className="absolute bottom-20 left-10 w-56 h-56 bg-indigo-200/20 rounded-full blur-3xl" />
 
-          {/* Logo oficial */}
-          <div className="absolute top-8 right-10">
-            <Image
-              src="/logo_romex.jpg"
-              alt="RomEx Quality Management System"
-              width={160}
-              height={42}
-              className="object-contain"
-              priority
-            />
-          </div>
-
-          {/* Simple dashboard mockup */}
+          {/* Dashboard mockup */}
           <div className="relative w-[80%] max-w-md">
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl shadow-blue-200/30 border border-white/60 p-5">
               <div className="flex items-center gap-2 mb-4">
