@@ -84,7 +84,7 @@ export default function LoginPage() {
           {/* Logo oficial */}
           <div className="absolute top-8 right-10">
             <Image
-              src="/romex-logo.png"
+              src="/logo_romex.jpg"
               alt="RomEx Quality Management System"
               width={160}
               height={42}
