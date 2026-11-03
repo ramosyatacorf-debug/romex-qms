@@ -21,19 +21,19 @@ export default function Sidebar({
   return (
     <aside
       className={`h-screen bg-white border-r border-slate-200 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
-        collapsed ? "w-[72px]" : "w-64"
+        collapsed ? "w-[72px]" : "w-[260px]"
       }`}
     >
-      {/* Header */}
-      <div className="h-[68px] flex items-center gap-2 px-3 border-b border-slate-100">
+      {/* Header con logo */}
+      <div className="h-[76px] flex items-center gap-2 px-3 border-b border-slate-100">
         {!collapsed && (
-          <Link href="/dashboard" className="flex-1 flex items-center min-w-0">
+          <Link href="/dashboard" className="flex-1 flex items-center min-w-0 py-1">
             <Image
               src="/logo_romex.jpg"
-              alt="RomEx"
-              width={140}
-              height={38}
-              className="object-contain object-left h-9 w-auto"
+              alt="RomEx Quality Management System"
+              width={160}
+              height={44}
+              className="object-contain object-left w-full max-h-11"
               priority
             />
           </Link>
