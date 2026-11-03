@@ -1,10 +1,15 @@
+"use client";
+
+import { useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import ModuleCard from "@/components/ModuleCard";
 
 export default function DashboardPage() {
+  const [collapsed, setCollapsed] = useState(false);
+
   return (
     <div className="flex min-h-screen bg-white">
-      <Sidebar />
+      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
       <main className="flex-1 flex flex-col min-w-0">
         <div className="flex-1 px-8 py-8 md:px-12 md:py-10">
@@ -18,7 +23,7 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          {/* Modules - grid ordenado */}
+          {/* Modules */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-3xl">
             <ModuleCard
               number="Modulo 01"
@@ -38,7 +43,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Footer */}
         <footer className="py-3 text-center text-[11px] text-slate-400 border-t border-slate-50">
           Exportadora RomEx S.A. — QMS Sistema de Gestión de Laboratorio
         </footer>
