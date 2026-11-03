@@ -26,45 +26,51 @@ export default function LoginPage() {
         {/* Left - Login form */}
         <div className="w-full lg:w-[42%] flex flex-col justify-center px-8 md:px-12 py-12">
           <div className="max-w-sm mx-auto w-full">
-            {/* Logo arriba del formulario */}
-            <div className="mb-8">
+            {/* Logo */}
+            <div className="mb-7">
               <Image
                 src="/logo_romex.jpg"
                 alt="RomEx Quality Management System"
-                width={140}
-                height={36}
+                width={120}
+                height={32}
                 className="object-contain"
                 priority
               />
             </div>
 
-            <h1 className="text-3xl font-bold text-slate-800 tracking-tight mb-2">Login</h1>
-            <p className="text-slate-500 text-sm mb-8 leading-relaxed">
+            <h1 className="text-[28px] font-semibold text-slate-800 tracking-tight mb-1.5">
+              Login
+            </h1>
+            <p className="text-slate-500 text-[13.5px] mb-8 leading-relaxed">
               Welcome to log in to your background management system.
             </p>
 
             <form onSubmit={handleLogin} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1.5">Email</label>
+                <label className="block text-[13px] font-medium text-slate-600 mb-1.5">
+                  Email
+                </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="1185780732@qq.com"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400 transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-[14px] text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400 transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1.5">Password</label>
+                <label className="block text-[13px] font-medium text-slate-600 mb-1.5">
+                  Password
+                </label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Please enter your password"
-                    className="w-full px-4 py-3 pr-12 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400 transition-all"
+                    className="w-full px-4 py-3 pr-12 rounded-xl border border-slate-200 bg-slate-50/50 text-[14px] text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400 transition-all"
                     required
                   />
                   <button
@@ -72,7 +78,7 @@ export default function LoginPage() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                   >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
                 </div>
               </div>
@@ -80,7 +86,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3.5 rounded-xl bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold tracking-wide shadow-lg shadow-blue-200/50 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full py-3 rounded-xl bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white text-[14px] font-semibold tracking-wide shadow-lg shadow-blue-200/50 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {isLoading ? "Ingresando..." : "LOGIN"}
               </button>
@@ -93,7 +99,6 @@ export default function LoginPage() {
           <div className="absolute top-10 right-16 w-40 h-40 bg-blue-200/30 rounded-full blur-3xl" />
           <div className="absolute bottom-20 left-10 w-56 h-56 bg-indigo-200/20 rounded-full blur-3xl" />
 
-          {/* Dashboard mockup */}
           <div className="relative w-[80%] max-w-md">
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl shadow-blue-200/30 border border-white/60 p-5">
               <div className="flex items-center gap-2 mb-4">
