@@ -18,7 +18,7 @@ export default function Sidebar({ userName = "Rodrigo Ramos Yataco" }: SidebarPr
       <div className="h-16 flex items-center justify-between px-3 border-b border-slate-100">
         <Link href="/dashboard" className="flex items-center max-w-[160px]">
           <Image
-            src="/romex-logo.png"
+            src="/logo_romex.jpg"
             alt="RomEx Quality Management System"
             width={150}
             height={40}
