@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Home, Settings, Menu, X, User } from "lucide-react";
+import { Home, Settings, PanelLeftClose, PanelLeft, User } from "lucide-react";
 
 interface SidebarProps {
   userName?: string;
@@ -20,20 +20,20 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`h-screen bg-white border-r border-slate-200 flex flex-col shrink-0 transition-all duration-300 ${
-        collapsed ? "w-[68px]" : "w-60"
+      className={`h-screen bg-white border-r border-slate-200 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
+        collapsed ? "w-[72px]" : "w-64"
       }`}
     >
-      {/* Header: Logo + Toggle */}
-      <div className="h-16 flex items-center justify-between px-3 border-b border-slate-100">
+      {/* Header */}
+      <div className="h-[68px] flex items-center gap-2 px-3 border-b border-slate-100">
         {!collapsed && (
-          <Link href="/dashboard" className="flex items-center overflow-hidden">
+          <Link href="/dashboard" className="flex-1 flex items-center min-w-0">
             <Image
               src="/logo_romex.jpg"
               alt="RomEx"
-              width={120}
-              height={32}
-              className="object-contain"
+              width={140}
+              height={38}
+              className="object-contain object-left h-9 w-auto"
               priority
             />
           </Link>
@@ -41,12 +41,12 @@ export default function Sidebar({
 
         <button
           onClick={onToggle}
-          className={`p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors ${
+          className={`p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors shrink-0 ${
             collapsed ? "mx-auto" : ""
           }`}
           title={collapsed ? "Expandir menú" : "Ocultar menú"}
         >
-          {collapsed ? <Menu size={18} /> : <X size={18} />}
+          {collapsed ? <PanelLeft size={18} /> : <PanelLeftClose size={18} />}
         </button>
       </div>
 
@@ -57,9 +57,9 @@ export default function Sidebar({
           title="Inicio"
           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-colors ${
             pathname === "/dashboard"
-              ? "bg-slate-100 text-slate-900"
+              ? "bg-blue-50 text-blue-700"
               : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-          } ${collapsed ? "justify-center" : ""}`}
+          } ${collapsed ? "justify-center px-0" : ""}`}
         >
           <Home
             size={18}
@@ -74,9 +74,9 @@ export default function Sidebar({
           title="Qualy AI"
           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-colors ${
             pathname === "/dashboard/qualy-ai"
-              ? "bg-slate-100 text-slate-900"
+              ? "bg-blue-50 text-blue-700"
               : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-          } ${collapsed ? "justify-center" : ""}`}
+          } ${collapsed ? "justify-center px-0" : ""}`}
         >
           <svg
             width="18"
@@ -108,17 +108,18 @@ export default function Sidebar({
           href="/dashboard/configuraciones"
           title="Configuraciones"
           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors ${
-            collapsed ? "justify-center" : ""
+            collapsed ? "justify-center px-0" : ""
           }`}
         >
           <Settings size={18} strokeWidth={1.8} className="shrink-0" />
-          {!collapsed && <span>configuraciones</span>}
+          {!collapsed && <span>Configuraciones</span>}
         </Link>
 
         <div
           className={`flex items-center gap-3 px-3 py-2.5 ${
-            collapsed ? "justify-center" : ""
+            collapsed ? "justify-center px-0" : ""
           }`}
+          title={userName}
         >
           <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 shrink-0">
             <User size={15} />
