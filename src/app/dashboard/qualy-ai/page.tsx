@@ -67,7 +67,6 @@ export default function QualyAIPage() {
     [voiceEnabled]
   );
 
-  // Saludo al entrar
   useEffect(() => {
     const t = setTimeout(() => {
       if (voiceEnabled) {
@@ -91,7 +90,6 @@ export default function QualyAIPage() {
     const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
 
     if (!SR) {
-      // Sin soporte de micrófono: simula escucha y responde
       setStatus("listening");
       setTranscript("Escuchando...");
       setTimeout(() => {
@@ -155,10 +153,24 @@ export default function QualyAIPage() {
   };
 
   const orbStyles: Record<Status, string> = {
-    idle: "from-slate-700 via-slate-800 to-slate-900 shadow-slate-500/20",
-    listening: "from-blue-500 via-blue-600 to-indigo-700 shadow-blue-400/40 scale-110",
-    thinking: "from-violet-500 via-purple-600 to-indigo-700 shadow-violet-400/40 animate-pulse",
-    speaking: "from-emerald-500 via-teal-600 to-cyan-700 shadow-emerald-400/40 scale-105",
+    idle: "from-slate-100 via-slate-50 to-white border-slate-200 shadow-slate-200/80",
+    listening: "from-blue-100 via-blue-50 to-white border-blue-300 shadow-blue-200/70 scale-110",
+    thinking: "from-violet-100 via-purple-50 to-white border-violet-300 shadow-violet-200/70 animate-pulse",
+    speaking: "from-teal-100 via-emerald-50 to-white border-teal-300 shadow-teal-200/70 scale-105",
+  };
+
+  const iconColor: Record<Status, string> = {
+    idle: "text-slate-600",
+    listening: "text-blue-600",
+    thinking: "text-violet-600",
+    speaking: "text-teal-600",
+  };
+
+  const ringColor: Record<Status, string> = {
+    idle: "border-slate-200/60",
+    listening: "border-blue-300/50",
+    thinking: "border-violet-300/50",
+    speaking: "border-teal-300/50",
   };
 
   const statusLabel: Record<Status, string> = {
@@ -169,15 +181,20 @@ export default function QualyAIPage() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0f1219]">
+    <div className="flex h-screen overflow-hidden bg-[#f8fafc]">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-      <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
+      <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         {/* Header */}
-        <div className="shrink-0 flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2.5 text-white/90">
-            <QualyIcon size={18} />
-            <span className="text-[14px] font-medium tracking-wide">Qualy AI</span>
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700">
+              <QualyIcon size={18} />
+            </div>
+            <div>
+              <h1 className="text-[15px] font-semibold text-slate-800">Qualy AI</h1>
+              <p className="text-[11.5px] text-slate-500">Asistente del laboratorio RomEx</p>
+            </div>
           </div>
 
           <button
@@ -188,8 +205,10 @@ export default function QualyAIPage() {
               });
               if (status === "speaking") setStatus("idle");
             }}
-            className={`p-2 rounded-full transition-colors ${
-              voiceEnabled ? "bg-white/10 text-white" : "bg-white/5 text-white/40"
+            className={`p-2 rounded-lg transition-colors ${
+              voiceEnabled
+                ? "bg-blue-50 text-blue-600"
+                : "bg-slate-100 text-slate-400"
             }`}
             title={voiceEnabled ? "Silenciar" : "Activar voz"}
           >
@@ -197,17 +216,17 @@ export default function QualyAIPage() {
           </button>
         </div>
 
-        {/* Esfera central */}
+        {/* Centro */}
         <div className="flex-1 flex flex-col items-center justify-center px-6">
           <div className="relative flex items-center justify-center">
             {(status === "listening" || status === "speaking") && (
               <>
                 <div
-                  className="absolute w-56 h-56 rounded-full border border-white/10 animate-ping pointer-events-none"
+                  className={`absolute w-52 h-52 rounded-full border ${ringColor[status]} animate-ping pointer-events-none`}
                   style={{ animationDuration: "2s" }}
                 />
                 <div
-                  className="absolute w-72 h-72 rounded-full border border-white/5 animate-ping pointer-events-none"
+                  className={`absolute w-64 h-64 rounded-full border ${ringColor[status]} animate-ping pointer-events-none`}
                   style={{ animationDuration: "2.8s" }}
                 />
               </>
@@ -216,30 +235,28 @@ export default function QualyAIPage() {
             <button
               onClick={toggleMic}
               disabled={status === "thinking" || status === "speaking"}
-              className={`relative w-40 h-40 rounded-full bg-gradient-to-br ${orbStyles[status]} shadow-2xl transition-all duration-500 flex items-center justify-center disabled:cursor-default`}
+              className={`relative w-44 h-44 rounded-full bg-gradient-to-br border-2 ${orbStyles[status]} shadow-xl transition-all duration-500 flex items-center justify-center disabled:cursor-default`}
             >
-              <div className="absolute inset-3 rounded-full bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
-
-              <div className="relative z-10 text-white/90">
+              <div className={`relative z-10 ${iconColor[status]}`}>
                 {status === "listening" ? (
                   <Mic size={36} />
                 ) : status === "speaking" ? (
                   <Volume2 size={36} />
                 ) : status === "thinking" ? (
-                  <div className="w-8 h-8 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  <div className="w-8 h-8 border-2 border-violet-300 border-t-violet-600 rounded-full animate-spin" />
                 ) : (
-                  <QualyIcon size={42} />
+                  <QualyIcon size={44} />
                 )}
               </div>
             </button>
           </div>
 
-          <p className="mt-10 text-[14px] text-white/45 tracking-wide">
+          <p className="mt-10 text-[14px] text-slate-500 tracking-wide">
             {statusLabel[status]}
           </p>
 
           {transcript && status === "listening" && (
-            <p className="mt-3 text-[13px] text-white/25 max-w-xs text-center italic">
+            <p className="mt-2 text-[13px] text-slate-400 max-w-xs text-center italic">
               “{transcript}”
             </p>
           )}
@@ -247,11 +264,11 @@ export default function QualyAIPage() {
           <button
             onClick={toggleMic}
             disabled={status === "thinking" || status === "speaking"}
-            className={`mt-8 flex items-center gap-2 h-11 px-5 rounded-full text-[13px] font-medium transition-all ${
+            className={`mt-8 flex items-center gap-2 h-11 px-6 rounded-full text-[13.5px] font-medium transition-all shadow-sm ${
               status === "listening"
-                ? "bg-red-500/90 text-white hover:bg-red-500"
-                : "bg-white/10 text-white/80 hover:bg-white/15"
-            } disabled:opacity-40 disabled:cursor-not-allowed`}
+                ? "bg-red-500 text-white hover:bg-red-600"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {status === "listening" ? (
               <>
@@ -267,7 +284,7 @@ export default function QualyAIPage() {
           </button>
         </div>
 
-        <p className="shrink-0 text-center text-[10px] text-white/15 pb-4">
+        <p className="shrink-0 text-center text-[11px] text-slate-400 pb-4">
           Qualy AI · RomEx QMS
         </p>
       </main>
