@@ -71,19 +71,37 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
+/** Busca en N° guía, zona, fecha, mes o año */
+function matchGuia(g: Guia, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return false;
+
+  const mesNombre = MESES[g.mes - 1].toLowerCase();
+  const mesNum = String(g.mes).padStart(2, "0");
+  const anio = String(g.anio);
+  const fecha = g.fechaRecepcion; // YYYY-MM-DD
+
+  return (
+    g.numeroGuia.toLowerCase().includes(q) ||
+    g.zona.toLowerCase().includes(q) ||
+    fecha.includes(q) ||
+    mesNombre.includes(q) ||
+    mesNombre.startsWith(q) ||
+    anio.includes(q) ||
+    `${mesNum}/${anio}`.includes(q) ||
+    `${anio}-${mesNum}`.includes(q)
+  );
+}
+
 export default function GuiasPage() {
   const [collapsed, setCollapsed] = useState(false);
   const [guias, setGuias] = useState<Guia[]>([]);
   const [vista, setVista] = useState<Vista>("carpetas");
 
-  // Navegación carpetas
   const [selectedAnio, setSelectedAnio] = useState<number | null>(null);
   const [selectedMes, setSelectedMes] = useState<number | null>(null);
 
-  // Búsqueda (interfaz separada)
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchZona, setSearchZona] = useState("");
-  const [searchApplied, setSearchApplied] = useState(false);
 
   const [showUpload, setShowUpload] = useState(false);
   const [preview, setPreview] = useState<Guia | null>(null);
@@ -127,19 +145,11 @@ export default function GuiasPage() {
   }, [guias, selectedAnio, selectedMes]);
 
   const resultadosBusqueda = useMemo(() => {
-    if (!searchApplied) return [];
-    const q = searchQuery.trim().toLowerCase();
-    const z = searchZona.trim().toLowerCase();
-    if (!q && !z) return [];
-
+    if (!searchQuery.trim()) return [];
     return guias
-      .filter((g) => {
-        const matchGuia = !q || g.numeroGuia.toLowerCase().includes(q);
-        const matchZona = !z || g.zona.toLowerCase().includes(z);
-        return matchGuia && matchZona;
-      })
+      .filter((g) => matchGuia(g, searchQuery))
       .sort((a, b) => b.fechaRecepcion.localeCompare(a.fechaRecepcion));
-  }, [guias, searchQuery, searchZona, searchApplied]);
+  }, [guias, searchQuery]);
 
   const resetForm = () => {
     setNumeroGuia("");
@@ -200,23 +210,10 @@ export default function GuiasPage() {
     setVista(v);
     if (v === "carpetas") {
       setSearchQuery("");
-      setSearchZona("");
-      setSearchApplied(false);
     } else {
       setSelectedAnio(null);
       setSelectedMes(null);
     }
-  };
-
-  const ejecutarBusqueda = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSearchApplied(true);
-  };
-
-  const limpiarBusqueda = () => {
-    setSearchQuery("");
-    setSearchZona("");
-    setSearchApplied(false);
   };
 
   return (
@@ -231,9 +228,7 @@ export default function GuiasPage() {
               <h1 className="text-[24px] font-semibold text-slate-800 tracking-tight mb-1.5">
                 Gestión de Guías
               </h1>
-              <p className="text-slate-500 text-[14px]">
-                Guías de remisión de cacao
-              </p>
+              <p className="text-slate-500 text-[14px]">Guías de remisión de cacao</p>
             </div>
 
             <button
@@ -245,7 +240,7 @@ export default function GuiasPage() {
             </button>
           </div>
 
-          {/* Tabs: Carpetas | Buscar */}
+          {/* Tabs */}
           <div className="flex gap-1 p-1 bg-slate-100 rounded-xl mb-10 w-fit">
             <button
               onClick={() => cambiarVista("carpetas")}
@@ -271,16 +266,14 @@ export default function GuiasPage() {
             </button>
           </div>
 
-          {/* ===================== VISTA CARPETAS ===================== */}
+          {/* ========== CARPETAS ========== */}
           {vista === "carpetas" && (
             <>
-              {/* Años */}
               {!selectedAnio && (
                 <section>
                   <h2 className="text-[13px] font-medium text-slate-500 uppercase tracking-wide mb-4">
                     Por año
                   </h2>
-
                   {anios.length === 0 ? (
                     <EmptyState onUpload={() => setShowUpload(true)} />
                   ) : (
@@ -311,7 +304,6 @@ export default function GuiasPage() {
                 </section>
               )}
 
-              {/* Meses */}
               {selectedAnio && !selectedMes && (
                 <section>
                   <button
@@ -321,12 +313,10 @@ export default function GuiasPage() {
                     <ArrowLeft size={15} />
                     Volver a años
                   </button>
-
                   <div className="mb-6">
                     <h2 className="text-[18px] font-semibold text-slate-800">{selectedAnio}</h2>
                     <p className="text-[13.5px] text-slate-500 mt-0.5">Selecciona un mes</p>
                   </div>
-
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {mesesDelAnio.map(({ mes, count }) => (
                       <button
@@ -350,7 +340,6 @@ export default function GuiasPage() {
                 </section>
               )}
 
-              {/* Guías del mes */}
               {selectedAnio && selectedMes && (
                 <section>
                   <button
@@ -360,7 +349,6 @@ export default function GuiasPage() {
                     <ArrowLeft size={15} />
                     Volver a {selectedAnio}
                   </button>
-
                   <div className="mb-8">
                     <h2 className="text-[18px] font-semibold text-slate-800">
                       {MESES[selectedMes - 1]} {selectedAnio}
@@ -375,7 +363,6 @@ export default function GuiasPage() {
                       )}
                     </p>
                   </div>
-
                   {guiasDelMes.length === 0 ? (
                     <p className="text-[14px] text-slate-400 py-8">No hay guías en este mes.</p>
                   ) : (
@@ -386,80 +373,60 @@ export default function GuiasPage() {
             </>
           )}
 
-          {/* ===================== VISTA BUSCAR ===================== */}
+          {/* ========== BUSCAR: una sola barra ========== */}
           {vista === "buscar" && (
             <section>
-              <div className="mb-8">
+              <div className="mb-6">
                 <h2 className="text-[18px] font-semibold text-slate-800 mb-1">Buscar guías</h2>
                 <p className="text-[13.5px] text-slate-500">
-                  Busca por número de guía y/o zona de procedencia
+                  N° de guía, zona, mes o fecha
                 </p>
               </div>
 
-              <form
-                onSubmit={ejecutarBusqueda}
-                className="bg-white border border-slate-200 rounded-2xl p-6 mb-8 space-y-5 max-w-lg"
-              >
-                <div>
-                  <label className="block text-[13px] font-medium text-slate-600 mb-1.5">
-                    N° de guía
-                  </label>
-                  <input
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Ej: EG07-00003608"
-                    className={inputClass}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[13px] font-medium text-slate-600 mb-1.5">
-                    Zona de procedencia
-                  </label>
-                  <input
-                    value={searchZona}
-                    onChange={(e) => setSearchZona(e.target.value)}
-                    placeholder="Ej: Neshuya, Sisa..."
-                    className={inputClass}
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-1">
+              {/* Barra única */}
+              <div className="relative mb-8 max-w-xl">
+                <Search
+                  size={18}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Ej: EG07-00003608 · Neshuya · Julio · 2026-07-16"
+                  className="w-full h-12 pl-12 pr-12 rounded-2xl border border-slate-200 bg-white text-[14px] text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 shadow-sm transition-all"
+                  autoFocus
+                />
+                {searchQuery && (
                   <button
-                    type="submit"
-                    className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[14px] font-medium"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
                   >
-                    Buscar
+                    <X size={16} />
                   </button>
-                  {searchApplied && (
-                    <button
-                      type="button"
-                      onClick={limpiarBusqueda}
-                      className="h-11 px-5 rounded-xl border border-slate-200 text-[14px] font-medium text-slate-600 hover:bg-slate-50"
-                    >
-                      Limpiar
-                    </button>
-                  )}
-                </div>
-              </form>
+                )}
+              </div>
 
-              {/* Resultados */}
-              {!searchApplied && (
-                <div className="flex flex-col items-center py-12 text-center">
+              {/* Estado vacío inicial */}
+              {!searchQuery.trim() && (
+                <div className="flex flex-col items-center py-14 text-center">
                   <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 mb-3">
                     <Search size={22} />
                   </div>
-                  <p className="text-[14px] text-slate-500">
-                    Completa los campos y pulsa Buscar
+                  <p className="text-[14px] text-slate-500 mb-1">Escribe para buscar</p>
+                  <p className="text-[12.5px] text-slate-400 max-w-sm">
+                    Puedes usar el N° de guía, la zona, el nombre del mes o una fecha
                   </p>
                 </div>
               )}
 
-              {searchApplied && resultadosBusqueda.length === 0 && (
+              {/* Sin resultados */}
+              {searchQuery.trim() && resultadosBusqueda.length === 0 && (
                 <p className="text-[14px] text-slate-400 py-8">No se encontraron guías.</p>
               )}
 
-              {searchApplied && resultadosBusqueda.length > 0 && (
+              {/* Resultados */}
+              {searchQuery.trim() && resultadosBusqueda.length > 0 && (
                 <div>
                   <p className="text-[13px] text-slate-500 mb-4">
                     {resultadosBusqueda.length} resultado{resultadosBusqueda.length !== 1 ? "s" : ""}
@@ -497,7 +464,6 @@ export default function GuiasPage() {
                 <X size={18} />
               </button>
             </div>
-
             <form onSubmit={handleUpload} className="px-6 py-6 space-y-5">
               <Field label="N° de guía">
                 <input required value={numeroGuia} onChange={(e) => setNumeroGuia(e.target.value)} placeholder="EG07-00003608" className={inputClass} />
@@ -533,7 +499,6 @@ export default function GuiasPage() {
         </div>
       )}
 
-      {/* Preview PDF */}
       {preview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50">
           <div className="w-full max-w-4xl h-[85vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
