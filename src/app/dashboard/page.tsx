@@ -12,34 +12,35 @@ export default function DashboardPage() {
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
       <main className="flex-1 flex flex-col min-w-0">
-        <div className="flex-1 px-6 py-7 md:px-10 md:py-9">
-          {/* Header */}
-          <div className="mb-7">
-            <h1 className="text-[22px] font-semibold text-slate-800 mb-1 tracking-tight">
+        <div className="flex-1 px-6 py-8 md:px-10 md:py-10">
+          <div className="mb-9 max-w-2xl">
+            <h1 className="text-[24px] font-semibold text-slate-800 mb-1.5 tracking-tight">
               ¡Hola Rodrigo!
             </h1>
-            <p className="text-slate-500 text-[13.5px] leading-relaxed max-w-lg">
-              Bienvenido al QMS del laboratorio de Exportadora RomEx S.A. Selecciona un módulo para comenzar.
+            <p className="text-slate-500 text-[14px] leading-relaxed">
+              Bienvenido al QMS de Exportadora RomEx S.A. Selecciona un módulo para comenzar.
             </p>
           </div>
 
-          {/* Modules */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 max-w-4xl">
             <ModuleCard
               number="Módulo 01"
               title="Microbiología"
+              description="Análisis y control microbiológico del laboratorio"
               href="/dashboard/microbiologia"
               icon="microscope"
             />
             <ModuleCard
               number="Módulo 02"
               title="Físico Químico"
+              description="Ensayos físico-químicos y resultados"
               href="/dashboard/fisico-quimico"
               icon="flask"
             />
             <ModuleCard
               number="Módulo 03"
               title="Gestión de Guías"
+              description="Guías de remisión de cacao por año y mes"
               href="/dashboard/guias"
               icon="folder"
             />
