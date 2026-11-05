@@ -4,6 +4,7 @@ import { ArrowRight, Microscope, FlaskConical, FolderOpen } from "lucide-react";
 interface ModuleCardProps {
   number: string;
   title: string;
+  description?: string;
   href?: string;
   icon?: "microscope" | "flask" | "folder" | "empty";
 }
@@ -18,6 +19,7 @@ const icons = {
 export default function ModuleCard({
   number,
   title,
+  description,
   href = "#",
   icon = "empty",
 }: ModuleCardProps) {
@@ -27,20 +29,25 @@ export default function ModuleCard({
   return (
     <Link
       href={href}
-      className={`group bg-white border border-slate-200 rounded-xl p-5 transition-all duration-200 min-h-[128px] flex flex-col ${
+      className={`group bg-white border border-slate-200 rounded-xl p-5 transition-all duration-200 min-h-[140px] flex flex-col ${
         isEmpty
-          ? "opacity-60 hover:opacity-80"
-          : "hover:border-blue-200 hover:shadow-md hover:shadow-blue-50/50"
+          ? "opacity-55 pointer-events-none"
+          : "hover:border-blue-200 hover:shadow-md hover:shadow-blue-50/40"
       }`}
     >
-      <div className="flex items-start justify-between gap-3 mb-5">
-        <div>
-          <p className="text-[11px] text-slate-400 font-medium mb-1 tracking-wide">
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="min-w-0">
+          <p className="text-[11px] text-slate-400 font-medium mb-1 tracking-wide uppercase">
             {number}
           </p>
-          <h3 className="text-[14px] font-semibold text-slate-800 leading-snug">
+          <h3 className="text-[14.5px] font-semibold text-slate-800 leading-snug">
             {title || "Próximamente"}
           </h3>
+          {description && (
+            <p className="text-[12.5px] text-slate-500 mt-1.5 leading-relaxed line-clamp-2">
+              {description}
+            </p>
+          )}
         </div>
 
         {Icon && (
