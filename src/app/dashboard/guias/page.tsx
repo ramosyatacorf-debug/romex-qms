@@ -13,6 +13,9 @@ import {
   Trash2,
   Eye,
   ArrowLeft,
+  Package,
+  Scale,
+  Files,
 } from "lucide-react";
 
 interface Guia {
@@ -71,6 +74,10 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
+function formatKilos(n: number) {
+  return n.toLocaleString("es-PE", { maximumFractionDigits: 1 });
+}
+
 export default function GuiasPage() {
   const [collapsed, setCollapsed] = useState(false);
   const [guias, setGuias] = useState<Guia[]>([]);
@@ -79,10 +86,9 @@ export default function GuiasPage() {
   const [selectedAnio, setSelectedAnio] = useState<number | null>(null);
   const [selectedMes, setSelectedMes] = useState<number | null>(null);
 
-  // Búsqueda: texto (guía/zona) + filtros año/mes separados
   const [searchQuery, setSearchQuery] = useState("");
-  const [filtroAnio, setFiltroAnio] = useState<string>("");
-  const [filtroMes, setFiltroMes] = useState<string>("");
+  const [filtroAnio, setFiltroAnio] = useState("");
+  const [filtroMes, setFiltroMes] = useState("");
 
   const [showUpload, setShowUpload] = useState(false);
   const [preview, setPreview] = useState<Guia | null>(null);
@@ -99,6 +105,14 @@ export default function GuiasPage() {
     setGuias(loadGuias());
   }, []);
 
+  const totales = useMemo(() => {
+    return {
+      guias: guias.length,
+      sacos: guias.reduce((s, g) => s + g.sacos, 0),
+      kilos: guias.reduce((s, g) => s + g.kilos, 0),
+    };
+  }, [guias]);
+
   const anios = useMemo(() => {
     const map = new Map<number, number>();
     guias.forEach((g) => map.set(g.anio, (map.get(g.anio) || 0) + 1));
@@ -107,9 +121,10 @@ export default function GuiasPage() {
       .sort((a, b) => b.anio - a.anio);
   }, [guias]);
 
-  const aniosDisponibles = useMemo(() => {
-    return Array.from(new Set(guias.map((g) => g.anio))).sort((a, b) => b - a);
-  }, [guias]);
+  const aniosDisponibles = useMemo(
+    () => Array.from(new Set(guias.map((g) => g.anio))).sort((a, b) => b - a),
+    [guias]
+  );
 
   const mesesDelAnio = useMemo(() => {
     if (!selectedAnio) return [];
@@ -129,30 +144,24 @@ export default function GuiasPage() {
       .sort((a, b) => b.fechaRecepcion.localeCompare(a.fechaRecepcion));
   }, [guias, selectedAnio, selectedMes]);
 
-  const hayFiltrosBusqueda =
+  const hayFiltros =
     searchQuery.trim() !== "" || filtroAnio !== "" || filtroMes !== "";
 
   const resultadosBusqueda = useMemo(() => {
-    if (!hayFiltrosBusqueda) return [];
-
+    if (!hayFiltros) return [];
     const q = searchQuery.trim().toLowerCase();
-
     return guias
       .filter((g) => {
-        // Texto: solo N° guía o zona
         const matchTexto =
           !q ||
           g.numeroGuia.toLowerCase().includes(q) ||
           g.zona.toLowerCase().includes(q);
-
-        // Filtros separados de año y mes
         const matchAnio = !filtroAnio || g.anio === Number(filtroAnio);
         const matchMes = !filtroMes || g.mes === Number(filtroMes);
-
         return matchTexto && matchAnio && matchMes;
       })
       .sort((a, b) => b.fechaRecepcion.localeCompare(a.fechaRecepcion));
-  }, [guias, searchQuery, filtroAnio, filtroMes, hayFiltrosBusqueda]);
+  }, [guias, searchQuery, filtroAnio, filtroMes, hayFiltros]);
 
   const resetForm = () => {
     setNumeroGuia("");
@@ -217,9 +226,8 @@ export default function GuiasPage() {
 
   const cambiarVista = (v: Vista) => {
     setVista(v);
-    if (v === "carpetas") {
-      limpiarBusqueda();
-    } else {
+    if (v === "carpetas") limpiarBusqueda();
+    else {
       setSelectedAnio(null);
       setSelectedMes(null);
     }
@@ -237,42 +245,33 @@ export default function GuiasPage() {
               <h1 className="text-[24px] font-semibold text-slate-800 tracking-tight mb-1.5">
                 Gestión de Guías
               </h1>
-              <p className="text-slate-500 text-[14px]">Guías de remisión de cacao</p>
+              <p className="text-slate-500 text-[14px]">
+                Guías de remisión de cacao · archivo por año y mes
+              </p>
             </div>
 
             <button
               onClick={() => setShowUpload(true)}
-              className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[14px] font-medium transition-colors shrink-0"
+              className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[14px] font-medium transition-colors shrink-0 shadow-sm shadow-blue-600/20"
             >
               <Upload size={16} />
               Subir guía
             </button>
           </div>
 
+          {/* Resumen global */}
+          {guias.length > 0 && vista === "carpetas" && !selectedAnio && (
+            <div className="grid grid-cols-3 gap-3 mb-8">
+              <StatCard icon={<Files size={16} />} label="Guías" value={String(totales.guias)} />
+              <StatCard icon={<Package size={16} />} label="Sacos" value={totales.sacos.toLocaleString("es-PE")} />
+              <StatCard icon={<Scale size={16} />} label="Kilos" value={formatKilos(totales.kilos)} />
+            </div>
+          )}
+
           {/* Tabs */}
-          <div className="flex gap-1 p-1 bg-slate-100 rounded-xl mb-10 w-fit">
-            <button
-              onClick={() => cambiarVista("carpetas")}
-              className={`inline-flex items-center gap-2 h-10 px-4 rounded-lg text-[13.5px] font-medium transition-colors ${
-                vista === "carpetas"
-                  ? "bg-white text-slate-800 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700"
-              }`}
-            >
-              <Folder size={15} />
-              Carpetas
-            </button>
-            <button
-              onClick={() => cambiarVista("buscar")}
-              className={`inline-flex items-center gap-2 h-10 px-4 rounded-lg text-[13.5px] font-medium transition-colors ${
-                vista === "buscar"
-                  ? "bg-white text-slate-800 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700"
-              }`}
-            >
-              <Search size={15} />
-              Buscar
-            </button>
+          <div className="flex gap-1 p-1 bg-slate-100 rounded-xl mb-8 w-fit">
+            <TabBtn active={vista === "carpetas"} onClick={() => cambiarVista("carpetas")} icon={<Folder size={15} />} label="Carpetas" />
+            <TabBtn active={vista === "buscar"} onClick={() => cambiarVista("buscar")} icon={<Search size={15} />} label="Buscar" />
           </div>
 
           {/* ========== CARPETAS ========== */}
@@ -281,32 +280,23 @@ export default function GuiasPage() {
               {!selectedAnio && (
                 <section>
                   <h2 className="text-[13px] font-medium text-slate-500 uppercase tracking-wide mb-4">
-                    Por año
+                    Archivo por año
                   </h2>
                   {anios.length === 0 ? (
                     <EmptyState onUpload={() => setShowUpload(true)} />
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {anios.map(({ anio, count }) => (
-                        <button
+                        <FolderCard
                           key={anio}
+                          title={String(anio)}
+                          subtitle={`${count} guía${count !== 1 ? "s" : ""}`}
+                          tone="amber"
                           onClick={() => {
                             setSelectedAnio(anio);
                             setSelectedMes(null);
                           }}
-                          className="group flex items-center gap-4 p-5 bg-white border border-slate-200 rounded-2xl text-left hover:border-blue-300 hover:shadow-md hover:shadow-blue-50/50 transition-all"
-                        >
-                          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                            <Folder size={22} />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[16px] font-semibold text-slate-800">{anio}</p>
-                            <p className="text-[13px] text-slate-500 mt-0.5">
-                              {count} guía{count !== 1 ? "s" : ""}
-                            </p>
-                          </div>
-                          <ChevronRight size={18} className="text-slate-300 group-hover:text-blue-500" />
-                        </button>
+                        />
                       ))}
                     </div>
                   )}
@@ -315,35 +305,21 @@ export default function GuiasPage() {
 
               {selectedAnio && !selectedMes && (
                 <section>
-                  <button
-                    onClick={() => setSelectedAnio(null)}
-                    className="inline-flex items-center gap-2 text-[13.5px] text-slate-500 hover:text-slate-800 mb-6"
-                  >
-                    <ArrowLeft size={15} />
-                    Volver a años
-                  </button>
+                  <BackBtn label="Volver a años" onClick={() => setSelectedAnio(null)} />
                   <div className="mb-6">
                     <h2 className="text-[18px] font-semibold text-slate-800">{selectedAnio}</h2>
                     <p className="text-[13.5px] text-slate-500 mt-0.5">Selecciona un mes</p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {mesesDelAnio.map(({ mes, count }) => (
-                      <button
+                      <FolderCard
                         key={mes}
+                        title={MESES[mes - 1]}
+                        subtitle={`${count} guía${count !== 1 ? "s" : ""}`}
+                        tone="blue"
+                        open
                         onClick={() => setSelectedMes(mes)}
-                        className="group flex items-center gap-4 p-5 bg-white border border-slate-200 rounded-2xl text-left hover:border-blue-300 hover:shadow-md hover:shadow-blue-50/50 transition-all"
-                      >
-                        <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                          <FolderOpen size={22} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[16px] font-semibold text-slate-800">{MESES[mes - 1]}</p>
-                          <p className="text-[13px] text-slate-500 mt-0.5">
-                            {count} guía{count !== 1 ? "s" : ""}
-                          </p>
-                        </div>
-                        <ChevronRight size={18} className="text-slate-300 group-hover:text-blue-500" />
-                      </button>
+                      />
                     ))}
                   </div>
                 </section>
@@ -351,14 +327,8 @@ export default function GuiasPage() {
 
               {selectedAnio && selectedMes && (
                 <section>
-                  <button
-                    onClick={() => setSelectedMes(null)}
-                    className="inline-flex items-center gap-2 text-[13.5px] text-slate-500 hover:text-slate-800 mb-6"
-                  >
-                    <ArrowLeft size={15} />
-                    Volver a {selectedAnio}
-                  </button>
-                  <div className="mb-8">
+                  <BackBtn label={`Volver a ${selectedAnio}`} onClick={() => setSelectedMes(null)} />
+                  <div className="mb-6">
                     <h2 className="text-[18px] font-semibold text-slate-800">
                       {MESES[selectedMes - 1]} {selectedAnio}
                     </h2>
@@ -367,7 +337,7 @@ export default function GuiasPage() {
                       {guiasDelMes.length > 0 && (
                         <>
                           {" · "}{totalSacosMes.toLocaleString("es-PE")} sacos
-                          {" · "}{totalKilosMes.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg
+                          {" · "}{formatKilos(totalKilosMes)} kg
                         </>
                       )}
                     </p>
@@ -388,16 +358,12 @@ export default function GuiasPage() {
               <div className="mb-6">
                 <h2 className="text-[18px] font-semibold text-slate-800 mb-1">Buscar guías</h2>
                 <p className="text-[13.5px] text-slate-500">
-                  Busca por N° de guía o zona · filtra por año y mes
+                  N° de guía o zona · filtros de año y mes
                 </p>
               </div>
 
-              {/* Barra: solo guía y zona */}
               <div className="relative mb-4 max-w-xl">
-                <Search
-                  size={18}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                />
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={searchQuery}
@@ -410,79 +376,67 @@ export default function GuiasPage() {
                   <button
                     onClick={() => setSearchQuery("")}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
-                    title="Limpiar texto"
                   >
                     <X size={16} />
                   </button>
                 )}
               </div>
 
-              {/* Filtros separados: Año y Mes */}
               <div className="flex flex-wrap items-center gap-3 mb-8">
                 <select
                   value={filtroAnio}
                   onChange={(e) => setFiltroAnio(e.target.value)}
-                  className="h-11 px-3.5 rounded-xl border border-slate-200 bg-white text-[13.5px] text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 min-w-[120px]"
+                  className="h-11 px-3.5 rounded-xl border border-slate-200 bg-white text-[13.5px] text-slate-700 outline-none focus:border-blue-500 min-w-[130px]"
                 >
                   <option value="">Todos los años</option>
                   {aniosDisponibles.map((a) => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
+                    <option key={a} value={a}>{a}</option>
                   ))}
                 </select>
 
                 <select
                   value={filtroMes}
                   onChange={(e) => setFiltroMes(e.target.value)}
-                  className="h-11 px-3.5 rounded-xl border border-slate-200 bg-white text-[13.5px] text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 min-w-[140px]"
+                  className="h-11 px-3.5 rounded-xl border border-slate-200 bg-white text-[13.5px] text-slate-700 outline-none focus:border-blue-500 min-w-[150px]"
                 >
                   <option value="">Todos los meses</option>
                   {MESES.map((nombre, i) => (
-                    <option key={nombre} value={i + 1}>
-                      {nombre}
-                    </option>
+                    <option key={nombre} value={i + 1}>{nombre}</option>
                   ))}
                 </select>
 
-                {hayFiltrosBusqueda && (
+                {hayFiltros && (
                   <button
                     onClick={limpiarBusqueda}
-                    className="h-11 px-4 rounded-xl border border-slate-200 text-[13.5px] font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+                    className="h-11 px-4 rounded-xl border border-slate-200 text-[13.5px] font-medium text-slate-600 hover:bg-slate-50"
                   >
                     Limpiar búsqueda
                   </button>
                 )}
               </div>
 
-              {/* Estado inicial */}
-              {!hayFiltrosBusqueda && (
+              {!hayFiltros && (
                 <div className="flex flex-col items-center py-14 text-center">
                   <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 mb-3">
                     <Search size={22} />
                   </div>
                   <p className="text-[14px] text-slate-500 mb-1">Busca o filtra para ver resultados</p>
                   <p className="text-[12.5px] text-slate-400 max-w-sm">
-                    Usa la barra para N° de guía o zona, y los selectores para año y mes
+                    Barra: N° guía o zona · Selectores: año y mes
                   </p>
                 </div>
               )}
 
-              {hayFiltrosBusqueda && resultadosBusqueda.length === 0 && (
+              {hayFiltros && resultadosBusqueda.length === 0 && (
                 <p className="text-[14px] text-slate-400 py-8">No se encontraron guías.</p>
               )}
 
-              {hayFiltrosBusqueda && resultadosBusqueda.length > 0 && (
+              {hayFiltros && resultadosBusqueda.length > 0 && (
                 <div>
                   <p className="text-[13px] text-slate-500 mb-4">
                     {resultadosBusqueda.length} resultado{resultadosBusqueda.length !== 1 ? "s" : ""}
                   </p>
-                  <GuiaList
-                    items={resultadosBusqueda}
-                    onPreview={setPreview}
-                    onDelete={handleDelete}
-                    showFolder
-                  />
+                  <GuiaList items={resultadosBusqueda} onPreview={setPreview} onDelete={handleDelete} showFolder />
                 </div>
               )}
             </section>
@@ -499,14 +453,11 @@ export default function GuiasPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
             <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
-              <h2 className="text-[16px] font-semibold text-slate-800">Subir guía</h2>
-              <button
-                onClick={() => {
-                  setShowUpload(false);
-                  resetForm();
-                }}
-                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400"
-              >
+              <div>
+                <h2 className="text-[16px] font-semibold text-slate-800">Subir guía</h2>
+                <p className="text-[12.5px] text-slate-500 mt-0.5">PDF de remisión + datos de recepción</p>
+              </div>
+              <button onClick={() => { setShowUpload(false); resetForm(); }} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400">
                 <X size={18} />
               </button>
             </div>
@@ -527,9 +478,9 @@ export default function GuiasPage() {
               </div>
               <Field label="Fecha de recepción">
                 <input required type="date" value={fechaRecepcion} onChange={(e) => setFechaRecepcion(e.target.value)} className={inputClass} />
-                <p className="mt-1.5 text-[12px] text-slate-400">Define la carpeta año → mes automáticamente</p>
+                <p className="mt-1.5 text-[12px] text-slate-400">Organiza automáticamente en año → mes</p>
               </Field>
-              <Field label="PDF de la guía">
+              <Field label="Archivo PDF">
                 <input required type="file" accept="application/pdf,.pdf" onChange={(e) => setFile(e.target.files?.[0] || null)} className="w-full text-[13px] text-slate-600 file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-700 file:text-[13px] file:font-medium hover:file:bg-slate-200" />
               </Field>
               <div className="flex gap-3 pt-2">
@@ -537,7 +488,7 @@ export default function GuiasPage() {
                   Cancelar
                 </button>
                 <button type="submit" disabled={saving} className="flex-1 h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[14px] font-medium disabled:opacity-60">
-                  {saving ? "Guardando..." : "Guardar"}
+                  {saving ? "Guardando..." : "Guardar guía"}
                 </button>
               </div>
             </form>
@@ -552,7 +503,7 @@ export default function GuiasPage() {
               <div>
                 <p className="text-[15px] font-semibold text-slate-800">{preview.numeroGuia}</p>
                 <p className="text-[12.5px] text-slate-500 mt-0.5">
-                  {preview.zona} · {preview.sacos} sacos · {preview.kilos.toLocaleString("es-PE")} kg · {preview.fechaRecepcion}
+                  {preview.zona} · {preview.sacos} sacos · {formatKilos(preview.kilos)} kg · {preview.fechaRecepcion}
                 </p>
               </div>
               <button onClick={() => setPreview(null)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400">
@@ -576,6 +527,88 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <label className="block text-[13px] font-medium text-slate-600 mb-1.5">{label}</label>
       {children}
     </div>
+  );
+}
+
+function TabBtn({
+  active,
+  onClick,
+  icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-2 h-10 px-4 rounded-lg text-[13.5px] font-medium transition-colors ${
+        active ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
+function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl px-4 py-3.5 flex items-center gap-3">
+      <div className="w-9 h-9 rounded-lg bg-slate-50 text-slate-500 flex items-center justify-center shrink-0">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">{label}</p>
+        <p className="text-[16px] font-semibold text-slate-800 tabular-nums">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function BackBtn({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button onClick={onClick} className="inline-flex items-center gap-2 text-[13.5px] text-slate-500 hover:text-slate-800 mb-6 transition-colors">
+      <ArrowLeft size={15} />
+      {label}
+    </button>
+  );
+}
+
+function FolderCard({
+  title,
+  subtitle,
+  tone,
+  open = false,
+  onClick,
+}: {
+  title: string;
+  subtitle: string;
+  tone: "amber" | "blue";
+  open?: boolean;
+  onClick: () => void;
+}) {
+  const colors =
+    tone === "amber"
+      ? "bg-amber-50 text-amber-600"
+      : "bg-blue-50 text-blue-600";
+
+  return (
+    <button
+      onClick={onClick}
+      className="group flex items-center gap-4 p-5 bg-white border border-slate-200 rounded-2xl text-left hover:border-blue-300 hover:shadow-md hover:shadow-blue-50/50 transition-all"
+    >
+      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${colors}`}>
+        {open ? <FolderOpen size={22} /> : <Folder size={22} />}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[16px] font-semibold text-slate-800">{title}</p>
+        <p className="text-[13px] text-slate-500 mt-0.5">{subtitle}</p>
+      </div>
+      <ChevronRight size={18} className="text-slate-300 group-hover:text-blue-500" />
+    </button>
   );
 }
 
@@ -624,11 +657,11 @@ function GuiaList({
           </div>
           <div className="hidden sm:flex items-center gap-6 text-[13px] text-slate-600 shrink-0">
             <div className="text-right">
-              <p className="font-medium">{g.sacos}</p>
+              <p className="font-medium tabular-nums">{g.sacos}</p>
               <p className="text-[11px] text-slate-400">sacos</p>
             </div>
             <div className="text-right min-w-[72px]">
-              <p className="font-medium">{g.kilos.toLocaleString("es-PE", { maximumFractionDigits: 1 })}</p>
+              <p className="font-medium tabular-nums">{formatKilos(g.kilos)}</p>
               <p className="text-[11px] text-slate-400">kg</p>
             </div>
             <div className="text-right min-w-[88px]">
