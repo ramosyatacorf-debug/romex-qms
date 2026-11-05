@@ -1,215 +1,276 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Sidebar from "@/components/Sidebar";
 import QualyIcon from "@/components/QualyIcon";
-import { Send, User, Volume2, VolumeX } from "lucide-react";
+import { Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 
-interface Message {
-  id: number;
-  role: "user" | "assistant";
-  content: string;
+type Status = "idle" | "listening" | "thinking" | "speaking";
+
+function speak(text: string, onEnd?: () => void) {
+  if (typeof window === "undefined" || !window.speechSynthesis) {
+    onEnd?.();
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "es-ES";
+  u.rate = 1;
+  u.pitch = 1.05;
+  u.onend = () => onEnd?.();
+  u.onerror = () => onEnd?.();
+  window.speechSynthesis.speak(u);
 }
 
-function speak(text: string) {
-  if (typeof window === "undefined" || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "es-ES";
-  utterance.rate = 1;
-  utterance.pitch = 1;
-  window.speechSynthesis.speak(utterance);
+function getReply(userText: string): string {
+  const t = userText.toLowerCase();
+  if (t.includes("guía") || t.includes("guia"))
+    return "Las guías están en el módulo tres, Gestión de Guías. Allí puedes buscar y subir documentos.";
+  if (t.includes("micro") || t.includes("muestra"))
+    return "El módulo de Microbiología está en desarrollo. Pronto podrás registrar muestras y resultados.";
+  if (t.includes("físico") || t.includes("fisico") || t.includes("químico") || t.includes("quimico"))
+    return "El módulo de Físico Químico formará parte del sistema de calidad RomEx.";
+  if (t.includes("hola") || t.includes("buenos") || t.includes("buenas"))
+    return "Hola. Soy Qualy AI, tu asistente del laboratorio RomEx. ¿En qué te ayudo?";
+  if (t.includes("quién eres") || t.includes("quien eres") || t.includes("qué eres") || t.includes("que eres"))
+    return "Soy Qualy AI, el asistente inteligente del sistema de gestión de calidad de RomEx.";
+  if (t.includes("qué puedes") || t.includes("que puedes") || t.includes("ayuda"))
+    return "Puedo orientarte sobre Microbiología, Físico Químico, Gestión de Guías y el uso del QMS.";
+  return "Entendido. Puedo ayudarte con los módulos del laboratorio y el sistema QMS. ¿Qué necesitas?";
 }
 
 export default function QualyAIPage() {
   const [collapsed, setCollapsed] = useState(false);
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  const [status, setStatus] = useState<Status>("idle");
   const [voiceEnabled, setVoiceEnabled] = useState(true);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      role: "assistant",
-      content:
-        "Hola, soy Qualy AI, tu asistente del laboratorio RomEx. Puedo ayudarte con consultas sobre módulos, guías, procesos de calidad y más. ¿En qué te puedo ayudar?",
+  const [transcript, setTranscript] = useState("");
+  const recognitionRef = useRef<any>(null);
+  const statusRef = useRef<Status>("idle");
+
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
+
+  const respond = useCallback(
+    (text: string) => {
+      const reply = getReply(text);
+      setStatus("thinking");
+      setTimeout(() => {
+        if (voiceEnabled) {
+          setStatus("speaking");
+          speak(reply, () => setStatus("idle"));
+        } else {
+          setStatus("idle");
+        }
+      }, 700);
     },
-  ]);
+    [voiceEnabled]
+  );
 
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-
+  // Saludo al entrar
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
-
-  // Saludo con voz al entrar (una sola vez)
-  useEffect(() => {
-    if (voiceEnabled) {
-      const t = setTimeout(() => {
-        speak(messages[0].content);
-      }, 600);
-      return () => clearTimeout(t);
-    }
+    const t = setTimeout(() => {
+      if (voiceEnabled) {
+        setStatus("speaking");
+        speak(
+          "Hola. Soy Qualy AI, asistente del laboratorio RomEx. Presiona el micrófono y habla conmigo.",
+          () => setStatus("idle")
+        );
+      }
+    }, 800);
+    return () => {
+      clearTimeout(t);
+      window.speechSynthesis?.cancel();
+      recognitionRef.current?.stop?.();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const text = input.trim();
-    if (!text || isTyping) return;
+  const startListening = () => {
+    const w = window as any;
+    const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
 
-    const userMsg: Message = { id: Date.now(), role: "user", content: text };
-    setMessages((prev) => [...prev, userMsg]);
-    setInput("");
-    setIsTyping(true);
+    if (!SR) {
+      // Sin soporte de micrófono: simula escucha y responde
+      setStatus("listening");
+      setTranscript("Escuchando...");
+      setTimeout(() => {
+        setTranscript("");
+        respond("hola");
+      }, 1600);
+      return;
+    }
 
-    await new Promise((r) => setTimeout(r, 800));
+    const recognition = new SR();
+    recognition.lang = "es-ES";
+    recognition.interimResults = true;
+    recognition.continuous = false;
 
-    const replyText = getSimulatedReply(text);
-    const reply: Message = { id: Date.now() + 1, role: "assistant", content: replyText };
-    setMessages((prev) => [...prev, reply]);
-    setIsTyping(false);
+    recognition.onstart = () => {
+      setStatus("listening");
+      setTranscript("");
+    };
 
-    if (voiceEnabled) speak(replyText);
+    recognition.onresult = (event: any) => {
+      let finalText = "";
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const r = event.results[i];
+        if (r.isFinal) finalText += r[0].transcript;
+        else interim += r[0].transcript;
+      }
+      setTranscript(finalText || interim);
+      if (finalText) {
+        recognition.stop();
+        setTranscript("");
+        respond(finalText);
+      }
+    };
+
+    recognition.onerror = () => {
+      setStatus("idle");
+      setTranscript("");
+    };
+
+    recognition.onend = () => {
+      if (statusRef.current === "listening") {
+        setStatus("idle");
+        setTranscript("");
+      }
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
+  const stopListening = () => {
+    recognitionRef.current?.stop?.();
+    setStatus("idle");
+    setTranscript("");
+  };
+
+  const toggleMic = () => {
+    if (status === "listening") stopListening();
+    else if (status === "idle") startListening();
+  };
+
+  const orbStyles: Record<Status, string> = {
+    idle: "from-slate-700 via-slate-800 to-slate-900 shadow-slate-500/20",
+    listening: "from-blue-500 via-blue-600 to-indigo-700 shadow-blue-400/40 scale-110",
+    thinking: "from-violet-500 via-purple-600 to-indigo-700 shadow-violet-400/40 animate-pulse",
+    speaking: "from-emerald-500 via-teal-600 to-cyan-700 shadow-emerald-400/40 scale-105",
+  };
+
+  const statusLabel: Record<Status, string> = {
+    idle: "Toca el micrófono para hablar",
+    listening: "Escuchando...",
+    thinking: "Pensando...",
+    speaking: "Hablando...",
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f8fafc]">
+    <div className="flex h-screen overflow-hidden bg-[#0f1219]">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-      <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-        {/* Header fijo */}
-        <div className="shrink-0 border-b border-slate-200 bg-white px-6 py-3.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-white">
-                <QualyIcon size={20} />
-              </div>
-              <div>
-                <h1 className="text-[15px] font-semibold text-slate-800">Qualy AI</h1>
-                <p className="text-[11.5px] text-slate-500">Asistente del laboratorio RomEx</p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                setVoiceEnabled((v) => {
-                  if (v) window.speechSynthesis?.cancel();
-                  return !v;
-                });
-              }}
-              className={`p-2 rounded-lg transition-colors ${
-                voiceEnabled
-                  ? "bg-blue-50 text-blue-600"
-                  : "bg-slate-100 text-slate-400"
-              }`}
-              title={voiceEnabled ? "Silenciar voz" : "Activar voz"}
-            >
-              {voiceEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
-            </button>
+      <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
+        {/* Header */}
+        <div className="shrink-0 flex items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-2.5 text-white/90">
+            <QualyIcon size={18} />
+            <span className="text-[14px] font-medium tracking-wide">Qualy AI</span>
           </div>
+
+          <button
+            onClick={() => {
+              setVoiceEnabled((v) => {
+                if (v) window.speechSynthesis?.cancel();
+                return !v;
+              });
+              if (status === "speaking") setStatus("idle");
+            }}
+            className={`p-2 rounded-full transition-colors ${
+              voiceEnabled ? "bg-white/10 text-white" : "bg-white/5 text-white/40"
+            }`}
+            title={voiceEnabled ? "Silenciar" : "Activar voz"}
+          >
+            {voiceEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+          </button>
         </div>
 
-        {/* Mensajes - solo esta zona hace scroll */}
-        <div
-          ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-5 md:px-8"
-        >
-          <div className="max-w-2xl mx-auto space-y-4">
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex gap-2.5 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                {msg.role === "assistant" && (
-                  <div className="w-7 h-7 rounded-full bg-slate-900 flex items-center justify-center text-white shrink-0 mt-0.5">
-                    <QualyIcon size={14} />
-                  </div>
-                )}
-
+        {/* Esfera central */}
+        <div className="flex-1 flex flex-col items-center justify-center px-6">
+          <div className="relative flex items-center justify-center">
+            {(status === "listening" || status === "speaking") && (
+              <>
                 <div
-                  className={`max-w-[78%] rounded-2xl px-3.5 py-2.5 text-[13.5px] leading-relaxed ${
-                    msg.role === "user"
-                      ? "bg-blue-600 text-white rounded-br-md"
-                      : "bg-white border border-slate-200 text-slate-700 rounded-bl-md"
-                  }`}
-                >
-                  {msg.content}
-                </div>
-
-                {msg.role === "user" && (
-                  <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 shrink-0 mt-0.5">
-                    <User size={13} />
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {isTyping && (
-              <div className="flex gap-2.5 justify-start">
-                <div className="w-7 h-7 rounded-full bg-slate-900 flex items-center justify-center text-white shrink-0">
-                  <QualyIcon size={14} />
-                </div>
-                <div className="bg-white border border-slate-200 rounded-2xl rounded-bl-md px-3.5 py-3">
-                  <div className="flex gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300 animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300 animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300 animate-bounce" style={{ animationDelay: "300ms" }} />
-                  </div>
-                </div>
-              </div>
+                  className="absolute w-56 h-56 rounded-full border border-white/10 animate-ping pointer-events-none"
+                  style={{ animationDuration: "2s" }}
+                />
+                <div
+                  className="absolute w-72 h-72 rounded-full border border-white/5 animate-ping pointer-events-none"
+                  style={{ animationDuration: "2.8s" }}
+                />
+              </>
             )}
 
-            <div ref={bottomRef} />
+            <button
+              onClick={toggleMic}
+              disabled={status === "thinking" || status === "speaking"}
+              className={`relative w-40 h-40 rounded-full bg-gradient-to-br ${orbStyles[status]} shadow-2xl transition-all duration-500 flex items-center justify-center disabled:cursor-default`}
+            >
+              <div className="absolute inset-3 rounded-full bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
+
+              <div className="relative z-10 text-white/90">
+                {status === "listening" ? (
+                  <Mic size={36} />
+                ) : status === "speaking" ? (
+                  <Volume2 size={36} />
+                ) : status === "thinking" ? (
+                  <div className="w-8 h-8 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <QualyIcon size={42} />
+                )}
+              </div>
+            </button>
           </div>
+
+          <p className="mt-10 text-[14px] text-white/45 tracking-wide">
+            {statusLabel[status]}
+          </p>
+
+          {transcript && status === "listening" && (
+            <p className="mt-3 text-[13px] text-white/25 max-w-xs text-center italic">
+              “{transcript}”
+            </p>
+          )}
+
+          <button
+            onClick={toggleMic}
+            disabled={status === "thinking" || status === "speaking"}
+            className={`mt-8 flex items-center gap-2 h-11 px-5 rounded-full text-[13px] font-medium transition-all ${
+              status === "listening"
+                ? "bg-red-500/90 text-white hover:bg-red-500"
+                : "bg-white/10 text-white/80 hover:bg-white/15"
+            } disabled:opacity-40 disabled:cursor-not-allowed`}
+          >
+            {status === "listening" ? (
+              <>
+                <MicOff size={15} />
+                Detener
+              </>
+            ) : (
+              <>
+                <Mic size={15} />
+                Hablar
+              </>
+            )}
+          </button>
         </div>
 
-        {/* Input fijo abajo */}
-        <div className="shrink-0 border-t border-slate-200 bg-white px-4 py-3 md:px-8">
-          <form onSubmit={handleSend} className="max-w-2xl mx-auto flex gap-2.5">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Escribe tu consulta..."
-              className="flex-1 h-10 px-4 rounded-xl border border-slate-200 bg-slate-50/50 text-[13.5px] text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:bg-white transition-all"
-              disabled={isTyping}
-            />
-            <button
-              type="submit"
-              disabled={!input.trim() || isTyping}
-              className="h-10 w-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-            >
-              <Send size={15} />
-            </button>
-          </form>
-          <p className="text-center text-[10.5px] text-slate-400 mt-2">
-            Qualy AI puede cometer errores. Verifica la información importante.
-          </p>
-        </div>
+        <p className="shrink-0 text-center text-[10px] text-white/15 pb-4">
+          Qualy AI · RomEx QMS
+        </p>
       </main>
     </div>
   );
-}
-
-function getSimulatedReply(userText: string): string {
-  const t = userText.toLowerCase();
-
-  if (t.includes("guía") || t.includes("guia")) {
-    return "Puedes gestionar las guías del laboratorio en el Módulo 03, Gestión de Guías. Allí puedes buscar, subir y organizar documentos de procedimientos y protocolos.";
-  }
-  if (t.includes("micro") || t.includes("muestra")) {
-    return "El módulo de Microbiología está en desarrollo. Pronto podrás registrar muestras, cargar resultados y generar reportes desde allí.";
-  }
-  if (t.includes("físico") || t.includes("fisico") || t.includes("químico") || t.includes("quimico")) {
-    return "El módulo de Físico Químico formará parte del QMS. Estará disponible junto con las demás secciones del laboratorio.";
-  }
-  if (t.includes("hola") || t.includes("buenos") || t.includes("buenas")) {
-    return "¡Hola! Estoy listo para ayudarte con el sistema RomEx QMS. Puedes preguntarme sobre módulos, guías o procesos del laboratorio.";
-  }
-  if (t.includes("qué puedes") || t.includes("que puedes") || t.includes("qué sabes") || t.includes("que sabes")) {
-    return "Puedo orientarte sobre los módulos del sistema: Microbiología, Físico Químico y Gestión de Guías. También sobre el uso general del QMS de RomEx. ¿Qué necesitas saber?";
-  }
-
-  return "Entiendo tu consulta. Por ahora puedo orientarte sobre los módulos del sistema y el uso general del QMS. ¿Sobre qué parte del sistema necesitas ayuda?";
 }
