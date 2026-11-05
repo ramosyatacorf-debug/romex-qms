@@ -37,7 +37,12 @@ export default function DashboardPage() {
               href="/dashboard/fisico-quimico"
               icon="flask"
             />
-            <ModuleCard number="Módulo 03" title="" href="#" icon="empty" />
+            <ModuleCard
+              number="Módulo 03"
+              title="Gestión de Guías"
+              href="/dashboard/guias"
+              icon="folder"
+            />
             <ModuleCard number="Módulo 04" title="" href="#" icon="empty" />
             <ModuleCard number="Módulo 05" title="" href="#" icon="empty" />
           </div>
