@@ -71,28 +71,6 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
-/** Busca en N° guía, zona, fecha, mes o año */
-function matchGuia(g: Guia, query: string): boolean {
-  const q = query.trim().toLowerCase();
-  if (!q) return false;
-
-  const mesNombre = MESES[g.mes - 1].toLowerCase();
-  const mesNum = String(g.mes).padStart(2, "0");
-  const anio = String(g.anio);
-  const fecha = g.fechaRecepcion; // YYYY-MM-DD
-
-  return (
-    g.numeroGuia.toLowerCase().includes(q) ||
-    g.zona.toLowerCase().includes(q) ||
-    fecha.includes(q) ||
-    mesNombre.includes(q) ||
-    mesNombre.startsWith(q) ||
-    anio.includes(q) ||
-    `${mesNum}/${anio}`.includes(q) ||
-    `${anio}-${mesNum}`.includes(q)
-  );
-}
-
 export default function GuiasPage() {
   const [collapsed, setCollapsed] = useState(false);
   const [guias, setGuias] = useState<Guia[]>([]);
@@ -101,7 +79,10 @@ export default function GuiasPage() {
   const [selectedAnio, setSelectedAnio] = useState<number | null>(null);
   const [selectedMes, setSelectedMes] = useState<number | null>(null);
 
+  // Búsqueda: texto (guía/zona) + filtros año/mes separados
   const [searchQuery, setSearchQuery] = useState("");
+  const [filtroAnio, setFiltroAnio] = useState<string>("");
+  const [filtroMes, setFiltroMes] = useState<string>("");
 
   const [showUpload, setShowUpload] = useState(false);
   const [preview, setPreview] = useState<Guia | null>(null);
@@ -126,6 +107,10 @@ export default function GuiasPage() {
       .sort((a, b) => b.anio - a.anio);
   }, [guias]);
 
+  const aniosDisponibles = useMemo(() => {
+    return Array.from(new Set(guias.map((g) => g.anio))).sort((a, b) => b - a);
+  }, [guias]);
+
   const mesesDelAnio = useMemo(() => {
     if (!selectedAnio) return [];
     const map = new Map<number, number>();
@@ -144,12 +129,30 @@ export default function GuiasPage() {
       .sort((a, b) => b.fechaRecepcion.localeCompare(a.fechaRecepcion));
   }, [guias, selectedAnio, selectedMes]);
 
+  const hayFiltrosBusqueda =
+    searchQuery.trim() !== "" || filtroAnio !== "" || filtroMes !== "";
+
   const resultadosBusqueda = useMemo(() => {
-    if (!searchQuery.trim()) return [];
+    if (!hayFiltrosBusqueda) return [];
+
+    const q = searchQuery.trim().toLowerCase();
+
     return guias
-      .filter((g) => matchGuia(g, searchQuery))
+      .filter((g) => {
+        // Texto: solo N° guía o zona
+        const matchTexto =
+          !q ||
+          g.numeroGuia.toLowerCase().includes(q) ||
+          g.zona.toLowerCase().includes(q);
+
+        // Filtros separados de año y mes
+        const matchAnio = !filtroAnio || g.anio === Number(filtroAnio);
+        const matchMes = !filtroMes || g.mes === Number(filtroMes);
+
+        return matchTexto && matchAnio && matchMes;
+      })
       .sort((a, b) => b.fechaRecepcion.localeCompare(a.fechaRecepcion));
-  }, [guias, searchQuery]);
+  }, [guias, searchQuery, filtroAnio, filtroMes, hayFiltrosBusqueda]);
 
   const resetForm = () => {
     setNumeroGuia("");
@@ -158,6 +161,12 @@ export default function GuiasPage() {
     setKilos("");
     setFechaRecepcion("");
     setFile(null);
+  };
+
+  const limpiarBusqueda = () => {
+    setSearchQuery("");
+    setFiltroAnio("");
+    setFiltroMes("");
   };
 
   const handleUpload = async (e: React.FormEvent) => {
@@ -209,7 +218,7 @@ export default function GuiasPage() {
   const cambiarVista = (v: Vista) => {
     setVista(v);
     if (v === "carpetas") {
-      setSearchQuery("");
+      limpiarBusqueda();
     } else {
       setSelectedAnio(null);
       setSelectedMes(null);
@@ -373,18 +382,18 @@ export default function GuiasPage() {
             </>
           )}
 
-          {/* ========== BUSCAR: una sola barra ========== */}
+          {/* ========== BUSCAR ========== */}
           {vista === "buscar" && (
             <section>
               <div className="mb-6">
                 <h2 className="text-[18px] font-semibold text-slate-800 mb-1">Buscar guías</h2>
                 <p className="text-[13.5px] text-slate-500">
-                  N° de guía, zona, mes o fecha
+                  Busca por N° de guía o zona · filtra por año y mes
                 </p>
               </div>
 
-              {/* Barra única */}
-              <div className="relative mb-8 max-w-xl">
+              {/* Barra: solo guía y zona */}
+              <div className="relative mb-4 max-w-xl">
                 <Search
                   size={18}
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -393,7 +402,7 @@ export default function GuiasPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Ej: EG07-00003608 · Neshuya · Julio · 2026-07-16"
+                  placeholder="N° de guía o zona de procedencia..."
                   className="w-full h-12 pl-12 pr-12 rounded-2xl border border-slate-200 bg-white text-[14px] text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 shadow-sm transition-all"
                   autoFocus
                 />
@@ -401,32 +410,69 @@ export default function GuiasPage() {
                   <button
                     onClick={() => setSearchQuery("")}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                    title="Limpiar texto"
                   >
                     <X size={16} />
                   </button>
                 )}
               </div>
 
-              {/* Estado vacío inicial */}
-              {!searchQuery.trim() && (
+              {/* Filtros separados: Año y Mes */}
+              <div className="flex flex-wrap items-center gap-3 mb-8">
+                <select
+                  value={filtroAnio}
+                  onChange={(e) => setFiltroAnio(e.target.value)}
+                  className="h-11 px-3.5 rounded-xl border border-slate-200 bg-white text-[13.5px] text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 min-w-[120px]"
+                >
+                  <option value="">Todos los años</option>
+                  {aniosDisponibles.map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={filtroMes}
+                  onChange={(e) => setFiltroMes(e.target.value)}
+                  className="h-11 px-3.5 rounded-xl border border-slate-200 bg-white text-[13.5px] text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 min-w-[140px]"
+                >
+                  <option value="">Todos los meses</option>
+                  {MESES.map((nombre, i) => (
+                    <option key={nombre} value={i + 1}>
+                      {nombre}
+                    </option>
+                  ))}
+                </select>
+
+                {hayFiltrosBusqueda && (
+                  <button
+                    onClick={limpiarBusqueda}
+                    className="h-11 px-4 rounded-xl border border-slate-200 text-[13.5px] font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+                  >
+                    Limpiar búsqueda
+                  </button>
+                )}
+              </div>
+
+              {/* Estado inicial */}
+              {!hayFiltrosBusqueda && (
                 <div className="flex flex-col items-center py-14 text-center">
                   <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 mb-3">
                     <Search size={22} />
                   </div>
-                  <p className="text-[14px] text-slate-500 mb-1">Escribe para buscar</p>
+                  <p className="text-[14px] text-slate-500 mb-1">Busca o filtra para ver resultados</p>
                   <p className="text-[12.5px] text-slate-400 max-w-sm">
-                    Puedes usar el N° de guía, la zona, el nombre del mes o una fecha
+                    Usa la barra para N° de guía o zona, y los selectores para año y mes
                   </p>
                 </div>
               )}
 
-              {/* Sin resultados */}
-              {searchQuery.trim() && resultadosBusqueda.length === 0 && (
+              {hayFiltrosBusqueda && resultadosBusqueda.length === 0 && (
                 <p className="text-[14px] text-slate-400 py-8">No se encontraron guías.</p>
               )}
 
-              {/* Resultados */}
-              {searchQuery.trim() && resultadosBusqueda.length > 0 && (
+              {hayFiltrosBusqueda && resultadosBusqueda.length > 0 && (
                 <div>
                   <p className="text-[13px] text-slate-500 mb-4">
                     {resultadosBusqueda.length} resultado{resultadosBusqueda.length !== 1 ? "s" : ""}
