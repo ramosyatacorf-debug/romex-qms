@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Home, Settings, PanelLeftClose, PanelLeft, User } from "lucide-react";
+import QualyIcon from "@/components/QualyIcon";
 
 interface SidebarProps {
   userName?: string;
@@ -78,26 +79,7 @@ export default function Sidebar({
               : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
           } ${collapsed ? "justify-center px-0" : ""}`}
         >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="shrink-0"
-          >
-            <path d="M12 2a3.5 3.5 0 0 1 3.5 3.5V7H8.5V5.5A3.5 3.5 0 0 1 12 2z" />
-            <rect x="8" y="7" width="8" height="5.5" rx="1.8" />
-            <circle cx="10.5" cy="9.7" r="0.7" fill="currentColor" stroke="none" />
-            <circle cx="13.5" cy="9.7" r="0.7" fill="currentColor" stroke="none" />
-            <path d="M9.5 12.5v2.2a2.5 2.5 0 0 0 5 0v-2.2" />
-            <path d="M8 18.5h8" />
-            <path d="M10 18.5v2" />
-            <path d="M14 18.5v2" />
-          </svg>
+          <QualyIcon size={18} className="shrink-0" />
           {!collapsed && <span>Qualy AI</span>}
         </Link>
       </nav>
