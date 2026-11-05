@@ -22,21 +22,18 @@ function speak(text: string, onEnd?: () => void) {
   window.speechSynthesis.speak(u);
 }
 
-function getReply(userText: string): string {
-  const t = userText.toLowerCase();
-  if (t.includes("guía") || t.includes("guia"))
-    return "Las guías están en el módulo tres, Gestión de Guías. Allí puedes buscar y subir documentos.";
-  if (t.includes("micro") || t.includes("muestra"))
-    return "El módulo de Microbiología está en desarrollo. Pronto podrás registrar muestras y resultados.";
-  if (t.includes("físico") || t.includes("fisico") || t.includes("químico") || t.includes("quimico"))
-    return "El módulo de Físico Químico formará parte del sistema de calidad RomEx.";
-  if (t.includes("hola") || t.includes("buenos") || t.includes("buenas"))
-    return "Hola. Soy Qualy AI, tu asistente del laboratorio RomEx. ¿En qué te ayudo?";
-  if (t.includes("quién eres") || t.includes("quien eres") || t.includes("qué eres") || t.includes("que eres"))
-    return "Soy Qualy AI, el asistente inteligente del sistema de gestión de calidad de RomEx.";
-  if (t.includes("qué puedes") || t.includes("que puedes") || t.includes("ayuda"))
-    return "Puedo orientarte sobre Microbiología, Físico Químico, Gestión de Guías y el uso del QMS.";
-  return "Entendido. Puedo ayudarte con los módulos del laboratorio y el sistema QMS. ¿Qué necesitas?";
+async function askQualy(message: string): Promise<string> {
+  try {
+    const res = await fetch("/api/qualy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    });
+    const data = await res.json();
+    return data.reply || "No pude responder en este momento.";
+  } catch {
+    return "Hubo un problema de conexión. Inténtalo de nuevo.";
+  }
 }
 
 export default function QualyAIPage() {
@@ -52,17 +49,15 @@ export default function QualyAIPage() {
   }, [status]);
 
   const respond = useCallback(
-    (text: string) => {
-      const reply = getReply(text);
+    async (text: string) => {
       setStatus("thinking");
-      setTimeout(() => {
-        if (voiceEnabled) {
-          setStatus("speaking");
-          speak(reply, () => setStatus("idle"));
-        } else {
-          setStatus("idle");
-        }
-      }, 700);
+      const reply = await askQualy(text);
+      if (voiceEnabled) {
+        setStatus("speaking");
+        speak(reply, () => setStatus("idle"));
+      } else {
+        setStatus("idle");
+      }
     },
     [voiceEnabled]
   );
@@ -185,7 +180,6 @@ export default function QualyAIPage() {
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
       <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-        {/* Header */}
         <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700">
@@ -193,7 +187,7 @@ export default function QualyAIPage() {
             </div>
             <div>
               <h1 className="text-[15px] font-semibold text-slate-800">Qualy AI</h1>
-              <p className="text-[11.5px] text-slate-500">Asistente del laboratorio RomEx</p>
+              <p className="text-[11.5px] text-slate-500">Asistente inteligente del laboratorio</p>
             </div>
           </div>
 
@@ -206,9 +200,7 @@ export default function QualyAIPage() {
               if (status === "speaking") setStatus("idle");
             }}
             className={`p-2 rounded-lg transition-colors ${
-              voiceEnabled
-                ? "bg-blue-50 text-blue-600"
-                : "bg-slate-100 text-slate-400"
+              voiceEnabled ? "bg-blue-50 text-blue-600" : "bg-slate-100 text-slate-400"
             }`}
             title={voiceEnabled ? "Silenciar" : "Activar voz"}
           >
@@ -216,7 +208,6 @@ export default function QualyAIPage() {
           </button>
         </div>
 
-        {/* Centro */}
         <div className="flex-1 flex flex-col items-center justify-center px-6">
           <div className="relative flex items-center justify-center">
             {(status === "listening" || status === "speaking") && (
@@ -251,9 +242,7 @@ export default function QualyAIPage() {
             </button>
           </div>
 
-          <p className="mt-10 text-[14px] text-slate-500 tracking-wide">
-            {statusLabel[status]}
-          </p>
+          <p className="mt-10 text-[14px] text-slate-500 tracking-wide">{statusLabel[status]}</p>
 
           {transcript && status === "listening" && (
             <p className="mt-2 text-[13px] text-slate-400 max-w-xs text-center italic">
