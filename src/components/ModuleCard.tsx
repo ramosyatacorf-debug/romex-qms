@@ -1,16 +1,17 @@
 import Link from "next/link";
-import { ArrowRight, Microscope, FlaskConical } from "lucide-react";
+import { ArrowRight, Microscope, FlaskConical, FolderOpen } from "lucide-react";
 
 interface ModuleCardProps {
   number: string;
   title: string;
   href?: string;
-  icon?: "microscope" | "flask" | "empty";
+  icon?: "microscope" | "flask" | "folder" | "empty";
 }
 
 const icons = {
   microscope: Microscope,
   flask: FlaskConical,
+  folder: FolderOpen,
   empty: null,
 };
 
@@ -52,7 +53,7 @@ export default function ModuleCard({
       <div className="mt-auto pt-3 border-t border-slate-100 flex justify-end">
         <ArrowRight
           size={15}
-          className={`transition-colors ${
+          className={`transition-all ${
             isEmpty
               ? "text-slate-200"
               : "text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5"
