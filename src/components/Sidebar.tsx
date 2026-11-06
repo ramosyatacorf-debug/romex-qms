@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Home, Settings, PanelLeftClose, PanelLeft, User } from "lucide-react";
+import { Home, Settings, PanelLeftClose, PanelLeft, User, Microscope } from "lucide-react";
 import QualyIcon from "@/components/QualyIcon";
 
 interface SidebarProps {
@@ -18,6 +18,7 @@ export default function Sidebar({
   onToggle,
 }: SidebarProps) {
   const pathname = usePathname();
+  const isMicro = pathname.startsWith("/dashboard/microbiologia");
 
   return (
     <aside
@@ -25,7 +26,6 @@ export default function Sidebar({
         collapsed ? "w-[72px]" : "w-[260px]"
       }`}
     >
-      {/* Header con logo */}
       <div className="h-[76px] flex items-center gap-2 px-3 border-b border-slate-100">
         {!collapsed && (
           <Link href="/dashboard" className="flex-1 flex items-center min-w-0 py-1">
@@ -51,7 +51,6 @@ export default function Sidebar({
         </button>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 py-4 px-2.5 space-y-1">
         <Link
           href="/dashboard"
@@ -71,6 +70,23 @@ export default function Sidebar({
         </Link>
 
         <Link
+          href="/dashboard/microbiologia"
+          title="Microbiología"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-colors ${
+            isMicro
+              ? "bg-blue-50 text-blue-700"
+              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+          } ${collapsed ? "justify-center px-0" : ""}`}
+        >
+          <Microscope
+            size={18}
+            strokeWidth={isMicro ? 2.2 : 1.8}
+            className="shrink-0"
+          />
+          {!collapsed && <span>Microbiología</span>}
+        </Link>
+
+        <Link
           href="/dashboard/qualy-ai"
           title="Qualy AI"
           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-colors ${
@@ -84,7 +100,6 @@ export default function Sidebar({
         </Link>
       </nav>
 
-      {/* Bottom */}
       <div className="border-t border-slate-100 p-2.5 space-y-1">
         <Link
           href="/dashboard/configuraciones"
