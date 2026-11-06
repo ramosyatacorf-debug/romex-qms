@@ -7,13 +7,11 @@ import {
   Microscope,
   Bug,
   Thermometer,
-  SprayCan,
-  Shirt,
-  Droplets,
   FlaskConical,
   ClipboardList,
   ChevronRight,
   CalendarDays,
+  Shirt,
 } from "lucide-react";
 
 type Freq = "Diario" | "Semanal" | "Mensual" | "Por evento";
@@ -72,7 +70,7 @@ const GRUPOS: Grupo[] = [
         description: "Temperatura y humedad relativa por área y punto",
         freq: "Diario",
         href: "/dashboard/microbiologia/ambientes",
-        ready: false,
+        ready: true,
       },
       {
         code: "A-LDAMP-R-017",
@@ -88,7 +86,7 @@ const GRUPOS: Grupo[] = [
         description: "Inspección de limpieza y desinfección de servicios higiénicos",
         freq: "Diario",
         href: "/dashboard/microbiologia/sshh",
-        ready: false,
+        ready: true,
       },
     ],
   },
@@ -104,7 +102,7 @@ const GRUPOS: Grupo[] = [
         description: "Registro de avistamientos, umbrales y acciones correctivas",
         freq: "Por evento",
         href: "/dashboard/microbiologia/plagas",
-        ready: false,
+        ready: true,
       },
       {
         code: "LM-CP-R-010",
@@ -184,9 +182,7 @@ export default function MicrobiologiaHubPage() {
         <div className="flex-1 px-6 py-8 md:px-10 md:py-10 max-w-5xl">
           <div className="mb-8">
             <div className="flex items-center gap-2 text-[13px] text-slate-400 mb-3">
-              <Link href="/dashboard" className="hover:text-slate-600">
-                Inicio
-              </Link>
+              <Link href="/dashboard" className="hover:text-slate-600">Inicio</Link>
               <ChevronRight size={14} />
               <span className="text-slate-600">Microbiología</span>
             </div>
@@ -240,16 +236,10 @@ function RegistroCard({ item }: { item: Registro }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[11px] font-medium text-slate-400 tracking-wide mb-1">
-            {item.code}
-          </p>
-          <h3 className="text-[14.5px] font-semibold text-slate-800 leading-snug">
-            {item.title}
-          </h3>
+          <p className="text-[11px] font-medium text-slate-400 tracking-wide mb-1">{item.code}</p>
+          <h3 className="text-[14.5px] font-semibold text-slate-800 leading-snug">{item.title}</h3>
         </div>
-        <span
-          className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[11px] font-medium ${FREQ_STYLE[item.freq]}`}
-        >
+        <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[11px] font-medium ${FREQ_STYLE[item.freq]}`}>
           <CalendarDays size={11} />
           {item.freq}
         </span>
@@ -257,9 +247,7 @@ function RegistroCard({ item }: { item: Registro }) {
       <p className="text-[13px] text-slate-500 leading-relaxed">{item.description}</p>
       <div className="flex items-center justify-between pt-1">
         {item.ready ? (
-          <span className="text-[12.5px] font-medium text-blue-600 group-hover:text-blue-700">
-            Abrir registro →
-          </span>
+          <span className="text-[12.5px] font-medium text-blue-600 group-hover:text-blue-700">Abrir registro →</span>
         ) : (
           <span className="inline-flex items-center gap-1.5 text-[12px] text-slate-400">
             <ClipboardList size={13} />
@@ -270,8 +258,6 @@ function RegistroCard({ item }: { item: Registro }) {
     </div>
   );
 
-  if (item.ready) {
-    return <Link href={item.href}>{content}</Link>;
-  }
+  if (item.ready) return <Link href={item.href}>{content}</Link>;
   return content;
 }
