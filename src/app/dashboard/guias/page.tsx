@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import Sidebar from "@/components/Sidebar";
 import {
   FolderOpen,
@@ -65,7 +65,14 @@ function loadGuias(): Guia[] {
 }
 
 function saveGuias(guias: Guia[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(guias));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(guias));
+  } catch {
+    alert(
+      "No se pudo guardar (el PDF es muy grande para el navegador). Usa un PDF más liviano o comprímelo."
+    );
+    throw new Error("storage_full");
+  }
 }
 
 function fileToBase64(file: File): Promise<string> {
@@ -81,44 +88,87 @@ function formatKilos(n: number) {
   return n.toLocaleString("es-PE", { maximumFractionDigits: 1 });
 }
 
+function dataUrlToBlob(dataUrl: string): Blob {
+  const parts = dataUrl.split(",");
+  const mimeMatch = parts[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : "application/pdf";
+  const binary = atob(parts[1] || "");
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: mime || "application/pdf" });
+}
+
+function safeFileName(g: Guia) {
+  if (g.fileName?.toLowerCase().endsWith(".pdf")) return g.fileName;
+  return `${g.numeroGuia.replace(/[^a-zA-Z0-9-_]/g, "_") || "guia"}.pdf`;
+}
+
 function downloadGuia(g: Guia) {
-  const a = document.createElement("a");
-  a.href = g.fileData;
-  a.download = g.fileName?.endsWith(".pdf")
-    ? g.fileName
-    : `${g.numeroGuia.replace(/[^a-zA-Z0-9-_]/g, "_")}.pdf`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  try {
+    if (!g.fileData) {
+      alert("No hay archivo PDF en esta guía.");
+      return;
+    }
+    const blob = dataUrlToBlob(g.fileData);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = safeFileName(g);
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  } catch {
+    alert("No se pudo descargar el PDF. Vuelve a subir la guía.");
+  }
 }
 
 function openInNewTab(g: Guia) {
-  const w = window.open();
-  if (!w) return;
-  w.document.write(`<!DOCTYPE html><html><head><title>${g.numeroGuia}</title>
-    <style>html,body{margin:0;height:100%;background:#525659}iframe{border:0;width:100%;height:100%}</style>
-    </head><body><iframe src="${g.fileData}" title="${g.numeroGuia}"></iframe></body></html>`);
-  w.document.close();
+  try {
+    if (!g.fileData) {
+      alert("No hay archivo PDF en esta guía.");
+      return;
+    }
+    const blob = dataUrlToBlob(g.fileData);
+    const url = URL.createObjectURL(blob);
+    const w = window.open(url, "_blank");
+    if (!w) {
+      downloadGuia(g);
+      URL.revokeObjectURL(url);
+    }
+  } catch {
+    alert("No se pudo abrir el PDF.");
+  }
 }
 
 function printGuia(g: Guia) {
-  const w = window.open("", "_blank", "width=900,height=700");
-  if (!w) return;
-  w.document.write(`<!DOCTYPE html><html><head><title>Imprimir ${g.numeroGuia}</title>
-    <style>html,body{margin:0;height:100%}iframe{border:0;width:100%;height:100%}</style>
-    </head><body>
-    <iframe id="pdf" src="${g.fileData}"></iframe>
-    <script>
-      const f = document.getElementById("pdf");
-      f.onload = function () {
-        setTimeout(function () {
-          try { f.contentWindow.focus(); f.contentWindow.print(); }
-          catch (e) { window.print(); }
-        }, 500);
-      };
-    </script>
-    </body></html>`);
-  w.document.close();
+  try {
+    if (!g.fileData) {
+      alert("No hay archivo PDF en esta guía.");
+      return;
+    }
+    const blob = dataUrlToBlob(g.fileData);
+    const url = URL.createObjectURL(blob);
+    const w = window.open(url, "_blank");
+    if (!w) {
+      alert("Permite ventanas emergentes para imprimir.");
+      URL.revokeObjectURL(url);
+      return;
+    }
+    setTimeout(() => {
+      try {
+        w.focus();
+        w.print();
+      } catch {
+        /* el usuario puede usar Ctrl+P en el visor */
+      }
+    }, 900);
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  } catch {
+    alert("No se pudo preparar la impresión.");
+  }
 }
 
 export default function GuiasPage() {
@@ -244,13 +294,15 @@ export default function GuiasPage() {
       };
 
       const updated = [nueva, ...guias];
-      setGuias(updated);
       saveGuias(updated);
+      setGuias(updated);
       setShowUpload(false);
       resetForm();
       setVista("carpetas");
       setSelectedAnio(nueva.anio);
       setSelectedMes(nueva.mes);
+    } catch {
+      /* storage error already alerted */
     } finally {
       setSaving(false);
     }
@@ -260,7 +312,11 @@ export default function GuiasPage() {
     if (!confirm("¿Eliminar esta guía?")) return;
     const updated = guias.filter((g) => g.id !== id);
     setGuias(updated);
-    saveGuias(updated);
+    try {
+      saveGuias(updated);
+    } catch {
+      /* ignore */
+    }
     if (preview?.id === id) setPreview(null);
   };
 
@@ -556,22 +612,23 @@ export default function GuiasPage() {
 
               <div className="flex items-center gap-2 shrink-0 flex-wrap">
                 <button
+                  type="button"
                   onClick={() => printGuia(preview)}
                   className="inline-flex items-center gap-2 h-10 px-3.5 rounded-xl border border-slate-200 text-slate-700 text-[13px] font-medium hover:bg-slate-50 transition-colors"
-                  title="Imprimir"
                 >
                   <Printer size={15} />
                   <span className="hidden sm:inline">Imprimir</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => downloadGuia(preview)}
                   className="inline-flex items-center gap-2 h-10 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-medium transition-colors"
-                  title="Descargar PDF"
                 >
                   <Download size={15} />
                   <span className="hidden sm:inline">Descargar</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => openInNewTab(preview)}
                   className="inline-flex items-center justify-center h-10 w-10 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors"
                   title="Abrir en pestaña nueva"
@@ -579,6 +636,7 @@ export default function GuiasPage() {
                   <ExternalLink size={15} />
                 </button>
                 <button
+                  type="button"
                   onClick={() => setPreview(null)}
                   className="inline-flex items-center justify-center h-10 w-10 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors"
                   title="Cerrar"
@@ -601,12 +659,8 @@ export default function GuiasPage() {
               </span>
             </div>
 
-            <div className="flex-1 min-h-0 bg-[#525659] relative">
-              <iframe
-                src={`${preview.fileData}#toolbar=1&navpanes=1&scrollbar=1&view=FitH&zoom=page-width`}
-                className="absolute inset-0 w-full h-full border-0"
-                title={preview.numeroGuia}
-              />
+            <div className="flex-1 min-h-0 bg-[#3f4347] relative">
+              <PdfFrame guia={preview} />
             </div>
           </div>
         </div>
@@ -727,6 +781,53 @@ function EmptyState({ onUpload }: { onUpload: () => void }) {
   );
 }
 
+function PdfFrame({ guia }: { guia: Guia }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (!guia.fileData) {
+      setError(true);
+      return;
+    }
+    try {
+      const blob = dataUrlToBlob(guia.fileData);
+      const objectUrl = URL.createObjectURL(blob);
+      setUrl(objectUrl);
+      setError(false);
+      return () => URL.revokeObjectURL(objectUrl);
+    } catch {
+      setError(true);
+    }
+  }, [guia.id, guia.fileData]);
+
+  if (error || !guia.fileData) {
+    return (
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-white/80 gap-3 p-6 text-center">
+        <FileText size={32} className="opacity-50" />
+        <p className="text-[14px]">No se pudo mostrar el PDF.</p>
+        <p className="text-[12.5px] text-white/50">Prueba Descargar o vuelve a subir el archivo.</p>
+      </div>
+    );
+  }
+
+  if (!url) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center text-white/70 text-[14px]">
+        Cargando PDF...
+      </div>
+    );
+  }
+
+  return (
+    <iframe
+      src={`${url}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
+      className="absolute inset-0 w-full h-full border-0 bg-white"
+      title={guia.numeroGuia}
+    />
+  );
+}
+
 function GuiaList({
   items,
   onPreview,
@@ -767,13 +868,13 @@ function GuiaList({
             </div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <button onClick={() => onPreview(g)} className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600" title="Ver PDF">
+            <button type="button" onClick={() => onPreview(g)} className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600" title="Ver PDF">
               <Eye size={16} />
             </button>
-            <button onClick={() => downloadGuia(g)} className="p-2 rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-600" title="Descargar PDF">
+            <button type="button" onClick={() => downloadGuia(g)} className="p-2 rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-600" title="Descargar PDF">
               <Download size={16} />
             </button>
-            <button onClick={() => onDelete(g.id)} className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500" title="Eliminar">
+            <button type="button" onClick={() => onDelete(g.id)} className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500" title="Eliminar">
               <Trash2 size={16} />
             </button>
           </div>
