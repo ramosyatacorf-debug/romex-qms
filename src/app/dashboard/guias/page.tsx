@@ -16,6 +16,8 @@ import {
   Package,
   Scale,
   Files,
+  Download,
+  ExternalLink,
 } from "lucide-react";
 
 interface Guia {
@@ -76,6 +78,27 @@ function fileToBase64(file: File): Promise<string> {
 
 function formatKilos(n: number) {
   return n.toLocaleString("es-PE", { maximumFractionDigits: 1 });
+}
+
+function downloadGuia(g: Guia) {
+  const a = document.createElement("a");
+  a.href = g.fileData;
+  a.download = g.fileName?.endsWith(".pdf")
+    ? g.fileName
+    : `${g.numeroGuia.replace(/[^a-zA-Z0-9-_]/g, "_")}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function openInNewTab(g: Guia) {
+  const w = window.open();
+  if (w) {
+    w.document.write(
+      `<iframe src="${g.fileData}" style="width:100%;height:100%;border:none" title="${g.numeroGuia}"></iframe>`
+    );
+    w.document.title = g.numeroGuia;
+  }
 }
 
 export default function GuiasPage() {
@@ -239,7 +262,6 @@ export default function GuiasPage() {
 
       <main className="flex-1 flex flex-col min-w-0">
         <div className="flex-1 px-6 py-8 md:px-10 md:py-10 max-w-5xl">
-          {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5 mb-8">
             <div>
               <h1 className="text-[24px] font-semibold text-slate-800 tracking-tight mb-1.5">
@@ -259,7 +281,6 @@ export default function GuiasPage() {
             </button>
           </div>
 
-          {/* Resumen global */}
           {guias.length > 0 && vista === "carpetas" && !selectedAnio && (
             <div className="grid grid-cols-3 gap-3 mb-8">
               <StatCard icon={<Files size={16} />} label="Guías" value={String(totales.guias)} />
@@ -268,13 +289,11 @@ export default function GuiasPage() {
             </div>
           )}
 
-          {/* Tabs */}
           <div className="flex gap-1 p-1 bg-slate-100 rounded-xl mb-8 w-fit">
             <TabBtn active={vista === "carpetas"} onClick={() => cambiarVista("carpetas")} icon={<Folder size={15} />} label="Carpetas" />
             <TabBtn active={vista === "buscar"} onClick={() => cambiarVista("buscar")} icon={<Search size={15} />} label="Buscar" />
           </div>
 
-          {/* ========== CARPETAS ========== */}
           {vista === "carpetas" && (
             <>
               {!selectedAnio && (
@@ -352,7 +371,6 @@ export default function GuiasPage() {
             </>
           )}
 
-          {/* ========== BUSCAR ========== */}
           {vista === "buscar" && (
             <section>
               <div className="mb-6">
@@ -448,7 +466,6 @@ export default function GuiasPage() {
         </footer>
       </main>
 
-      {/* Modal subir */}
       {showUpload && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
@@ -496,21 +513,53 @@ export default function GuiasPage() {
         </div>
       )}
 
+      {/* Vista PDF mejorada */}
       {preview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50">
-          <div className="w-full max-w-4xl h-[85vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
-              <div>
-                <p className="text-[15px] font-semibold text-slate-800">{preview.numeroGuia}</p>
-                <p className="text-[12.5px] text-slate-500 mt-0.5">
-                  {preview.zona} · {preview.sacos} sacos · {formatKilos(preview.kilos)} kg · {preview.fechaRecepcion}
-                </p>
-              </div>
-              <button onClick={() => setPreview(null)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400">
+        <div className="fixed inset-0 z-50 flex flex-col bg-slate-900/60 backdrop-blur-[2px]">
+          {/* Barra superior */}
+          <div className="shrink-0 bg-white border-b border-slate-200 px-4 sm:px-6 py-3 flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] font-semibold text-slate-800 truncate">{preview.numeroGuia}</p>
+              <p className="text-[12.5px] text-slate-500 truncate mt-0.5">
+                {preview.zona} · {preview.sacos} sacos · {formatKilos(preview.kilos)} kg · {preview.fechaRecepcion}
+                {preview.fileName ? ` · ${preview.fileName}` : ""}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => downloadGuia(preview)}
+                className="inline-flex items-center gap-2 h-10 px-3.5 sm:px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-medium transition-colors"
+              >
+                <Download size={15} />
+                <span className="hidden sm:inline">Descargar</span>
+              </button>
+              <button
+                onClick={() => openInNewTab(preview)}
+                className="inline-flex items-center gap-2 h-10 px-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+                title="Abrir en pestaña nueva"
+              >
+                <ExternalLink size={15} />
+              </button>
+              <button
+                onClick={() => setPreview(null)}
+                className="p-2.5 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors"
+                title="Cerrar"
+              >
                 <X size={18} />
               </button>
             </div>
-            <iframe src={preview.fileData} className="flex-1 w-full" title={preview.numeroGuia} />
+          </div>
+
+          {/* Visor PDF a pantalla casi completa */}
+          <div className="flex-1 min-h-0 p-3 sm:p-5 flex justify-center">
+            <div className="w-full max-w-5xl h-full bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200">
+              <iframe
+                src={`${preview.fileData}#toolbar=1&navpanes=0&view=FitH`}
+                className="w-full h-full border-0"
+                title={preview.numeroGuia}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -672,6 +721,9 @@ function GuiaList({
           <div className="flex items-center gap-1 shrink-0">
             <button onClick={() => onPreview(g)} className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600" title="Ver PDF">
               <Eye size={16} />
+            </button>
+            <button onClick={() => downloadGuia(g)} className="p-2 rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-600" title="Descargar PDF">
+              <Download size={16} />
             </button>
             <button onClick={() => onDelete(g.id)} className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500" title="Eliminar">
               <Trash2 size={16} />
