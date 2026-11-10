@@ -9,7 +9,6 @@ import {
   Thermometer,
   FlaskConical,
   ClipboardList,
-  ChevronRight,
   CalendarDays,
   Shirt,
 } from "lucide-react";
@@ -43,15 +42,15 @@ const GRUPOS: Grupo[] = [
       {
         code: "MICRO-PROD",
         title: "Microbiología de producto",
-        description: "Torta, manteca, cocoa y productos terminados · RTAW, mohos, coliformes, E. coli, enterobacterias",
+        description: "Torta, manteca, cocoa · RTAW, mohos, coliformes, E. coli",
         freq: "Diario",
         href: "/dashboard/microbiologia/producto",
         ready: false,
       },
       {
         code: "LM-RAE-004",
-        title: "Enterobacterias (barreduras y residuos)",
-        description: "Puntos de barredura y residuo en planta · UFC/g por punto",
+        title: "Enterobacterias",
+        description: "Barreduras y residuos en planta · UFC/g por punto",
         freq: "Mensual",
         href: "/dashboard/microbiologia/enterobacterias",
         ready: true,
@@ -67,7 +66,7 @@ const GRUPOS: Grupo[] = [
       {
         code: "LM-IP-020",
         title: "Control de ambientes",
-        description: "Temperatura y humedad relativa por área y punto",
+        description: "Temperatura y humedad relativa por área",
         freq: "Diario",
         href: "/dashboard/microbiologia/ambientes",
         ready: true,
@@ -75,7 +74,7 @@ const GRUPOS: Grupo[] = [
       {
         code: "A-LDAMP-R-017",
         title: "Limpieza de almacenes",
-        description: "Limpieza y desinfección de almacén de materia prima y productos terminados",
+        description: "Limpieza y desinfección de almacenes",
         freq: "Diario",
         href: "/dashboard/microbiologia/almacenes",
         ready: false,
@@ -83,7 +82,7 @@ const GRUPOS: Grupo[] = [
       {
         code: "LM-IP-R-003",
         title: "SS.HH. varones y damas",
-        description: "Inspección de limpieza y desinfección de servicios higiénicos",
+        description: "Inspección de servicios higiénicos",
         freq: "Diario",
         href: "/dashboard/microbiologia/sshh",
         ready: true,
@@ -99,7 +98,7 @@ const GRUPOS: Grupo[] = [
       {
         code: "LM-CP-R-004",
         title: "Población de roedores y aves",
-        description: "Registro de avistamientos, umbrales y acciones correctivas",
+        description: "Avistamientos, umbrales y acciones correctivas",
         freq: "Por evento",
         href: "/dashboard/microbiologia/plagas",
         ready: true,
@@ -107,7 +106,7 @@ const GRUPOS: Grupo[] = [
       {
         code: "LM-CP-R-010",
         title: "Resumen mensual de plagas",
-        description: "Observaciones resaltantes del mes y eficacia",
+        description: "Observaciones del mes y eficacia",
         freq: "Mensual",
         href: "/dashboard/microbiologia/plagas-resumen",
         ready: false,
@@ -123,7 +122,7 @@ const GRUPOS: Grupo[] = [
       {
         code: "LM-PAC-L-010",
         title: "Consumo de medios de cultivo",
-        description: "Ingreso, lote, destino y fechas de uso de plate count y otros",
+        description: "Ingreso, lote y uso de plate count",
         freq: "Diario",
         href: "/dashboard/microbiologia/medios",
         ready: false,
@@ -155,7 +154,7 @@ const GRUPOS: Grupo[] = [
       {
         code: "LM-CLOR-R-098",
         title: "Cloración de poza y shiler",
-        description: "Registro diario de dosis de cloro / lejía",
+        description: "Registro diario de dosis de cloro",
         freq: "Diario",
         href: "/dashboard/microbiologia/cloracion",
         ready: false,
@@ -173,6 +172,8 @@ const FREQ_STYLE: Record<Freq, string> = {
 
 export default function MicrobiologiaHubPage() {
   const [collapsed, setCollapsed] = useState(false);
+  const listos = GRUPOS.flatMap((g) => g.items).filter((i) => i.ready).length;
+  const total = GRUPOS.flatMap((g) => g.items).length;
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc]">
@@ -180,17 +181,15 @@ export default function MicrobiologiaHubPage() {
 
       <main className="flex-1 flex flex-col min-w-0">
         <div className="flex-1 px-6 py-8 md:px-10 md:py-10 max-w-5xl">
-          <div className="mb-8">
-            <div className="flex items-center gap-2 text-[13px] text-slate-400 mb-3">
-              <Link href="/dashboard" className="hover:text-slate-600">Inicio</Link>
-              <ChevronRight size={14} />
-              <span className="text-slate-600">Microbiología</span>
-            </div>
+          <div className="mb-9">
+            <p className="text-[12px] font-medium text-violet-600 tracking-wide uppercase mb-2">
+              Sistema de laboratorio
+            </p>
             <h1 className="text-[24px] font-semibold text-slate-800 tracking-tight mb-1.5">
               Microbiología
             </h1>
-            <p className="text-slate-500 text-[14px] max-w-2xl">
-              Registros diarios y periódicos del laboratorio. Selecciona un formato para capturar o consultar.
+            <p className="text-slate-500 text-[14px] max-w-xl">
+              Registros diarios y periódicos. {listos} de {total} formatos activos.
             </p>
           </div>
 
@@ -218,7 +217,7 @@ export default function MicrobiologiaHubPage() {
         </div>
 
         <footer className="py-3 text-center text-[11px] text-slate-400 border-t border-slate-100">
-          Exportadora RomEx S.A. — QMS Sistema de Gestión de Laboratorio
+          Exportadora RomEx S.A. — Microbiología
         </footer>
       </main>
     </div>
@@ -230,8 +229,8 @@ function RegistroCard({ item }: { item: Registro }) {
     <div
       className={`group flex flex-col gap-3 p-4 rounded-2xl border bg-white transition-all ${
         item.ready
-          ? "border-slate-200 hover:border-blue-300 hover:shadow-md hover:shadow-blue-50/50 cursor-pointer"
-          : "border-slate-100 opacity-75"
+          ? "border-slate-200 hover:border-violet-200 hover:shadow-md hover:shadow-violet-50/40 cursor-pointer"
+          : "border-slate-100 opacity-70"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -239,7 +238,9 @@ function RegistroCard({ item }: { item: Registro }) {
           <p className="text-[11px] font-medium text-slate-400 tracking-wide mb-1">{item.code}</p>
           <h3 className="text-[14.5px] font-semibold text-slate-800 leading-snug">{item.title}</h3>
         </div>
-        <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[11px] font-medium ${FREQ_STYLE[item.freq]}`}>
+        <span
+          className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[11px] font-medium ${FREQ_STYLE[item.freq]}`}
+        >
           <CalendarDays size={11} />
           {item.freq}
         </span>
@@ -247,7 +248,9 @@ function RegistroCard({ item }: { item: Registro }) {
       <p className="text-[13px] text-slate-500 leading-relaxed">{item.description}</p>
       <div className="flex items-center justify-between pt-1">
         {item.ready ? (
-          <span className="text-[12.5px] font-medium text-blue-600 group-hover:text-blue-700">Abrir registro →</span>
+          <span className="text-[12.5px] font-medium text-violet-600 group-hover:text-violet-700">
+            Abrir registro →
+          </span>
         ) : (
           <span className="inline-flex items-center gap-1.5 text-[12px] text-slate-400">
             <ClipboardList size={13} />
