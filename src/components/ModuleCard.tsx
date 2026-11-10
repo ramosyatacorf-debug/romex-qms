@@ -8,6 +8,8 @@ interface ModuleCardProps {
   href?: string;
   icon?: "microscope" | "flask" | "folder" | "empty";
   status?: "ready" | "soon";
+  /** Abre el sistema en una pestaña nueva (sistema independiente) */
+  newWindow?: boolean;
 }
 
 const icons = {
@@ -47,6 +49,7 @@ export default function ModuleCard({
   href = "#",
   icon = "empty",
   status = "ready",
+  newWindow = false,
 }: ModuleCardProps) {
   const Icon = icons[icon];
   const isEmpty = !title;
@@ -89,7 +92,7 @@ export default function ModuleCard({
           <span className="text-[12px] text-slate-400">En preparación</span>
         ) : (
           <span className="text-[12.5px] font-medium text-slate-500 group-hover:text-slate-800 transition-colors">
-            Abrir sistema
+            {newWindow ? "Abrir en nueva ventana" : "Abrir sistema"}
           </span>
         )}
         {!isSoon && (
@@ -103,5 +106,14 @@ export default function ModuleCard({
   );
 
   if (isSoon) return body;
+
+  if (newWindow) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer">
+        {body}
+      </a>
+    );
+  }
+
   return <Link href={href}>{body}</Link>;
 }
