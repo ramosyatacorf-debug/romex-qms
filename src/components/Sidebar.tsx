@@ -14,8 +14,6 @@ import {
   ArrowLeft,
   Thermometer,
   Bug,
-  FlaskConical,
-  Shirt,
   FileText,
 } from "lucide-react";
 import QualyIcon from "@/components/QualyIcon";
@@ -32,22 +30,41 @@ function NavLink({
   collapsed,
   icon,
   children,
+  external,
 }: {
   href: string;
   active: boolean;
   collapsed: boolean;
   icon: React.ReactNode;
   children: React.ReactNode;
+  external?: boolean;
 }) {
+  const className = `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-colors ${
+    active
+      ? "bg-blue-50 text-blue-700"
+      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+  } ${collapsed ? "justify-center px-0" : ""}`;
+
+  if (external) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={typeof children === "string" ? children : undefined}
+        className={className}
+      >
+        {icon}
+        {!collapsed && <span className="truncate">{children}</span>}
+      </a>
+    );
+  }
+
   return (
     <Link
       href={href}
       title={typeof children === "string" ? children : undefined}
-      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-colors ${
-        active
-          ? "bg-blue-50 text-blue-700"
-          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-      } ${collapsed ? "justify-center px-0" : ""}`}
+      className={className}
     >
       {icon}
       {!collapsed && <span className="truncate">{children}</span>}
@@ -55,7 +72,6 @@ function NavLink({
   );
 }
 
-/** Menú del portal QMS — solo para elegir módulo */
 function PortalNav({ collapsed, pathname }: { collapsed: boolean; pathname: string }) {
   return (
     <>
@@ -88,6 +104,7 @@ function PortalNav({ collapsed, pathname }: { collapsed: boolean; pathname: stri
         href="/dashboard/guias"
         active={false}
         collapsed={collapsed}
+        external
         icon={<FolderOpen size={18} strokeWidth={1.8} className="shrink-0" />}
       >
         Gestión de Guías
@@ -105,7 +122,6 @@ function PortalNav({ collapsed, pathname }: { collapsed: boolean; pathname: stri
   );
 }
 
-/** Menú propio del sistema Microbiología */
 function MicroNav({ collapsed, pathname }: { collapsed: boolean; pathname: string }) {
   const items = [
     {
@@ -138,7 +154,6 @@ function MicroNav({ collapsed, pathname }: { collapsed: boolean; pathname: strin
 
   return (
     <>
-      {/* Volver al portal */}
       <Link
         href="/dashboard"
         title="Volver al portal QMS"
@@ -192,41 +207,6 @@ function ClipboardIcon() {
   );
 }
 
-/** Menú propio del sistema Guías */
-function GuiasNav({ collapsed, pathname }: { collapsed: boolean; pathname: string }) {
-  return (
-    <>
-      <Link
-        href="/dashboard"
-        title="Volver al portal QMS"
-        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors mb-2 ${
-          collapsed ? "justify-center px-0" : ""
-        }`}
-      >
-        <ArrowLeft size={16} className="shrink-0" />
-        {!collapsed && <span>Portal QMS</span>}
-      </Link>
-
-      {!collapsed && (
-        <div className="px-3 py-2 mb-1">
-          <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-wider">Gestión de Guías</p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Archivo de remisión</p>
-        </div>
-      )}
-
-      <NavLink
-        href="/dashboard/guias"
-        active={pathname.startsWith("/dashboard/guias")}
-        collapsed={collapsed}
-        icon={<FolderOpen size={17} strokeWidth={1.8} className="shrink-0" />}
-      >
-        Archivo de guías
-      </NavLink>
-    </>
-  );
-}
-
-/** Menú propio de Qualy AI */
 function QualyNav({ collapsed }: { collapsed: boolean }) {
   return (
     <>
@@ -268,9 +248,9 @@ export default function Sidebar({
   const pathname = usePathname();
 
   const isMicro = pathname.startsWith("/dashboard/microbiologia");
-  const isGuias = pathname.startsWith("/dashboard/guias");
   const isQualy = pathname.startsWith("/dashboard/qualy-ai");
-  const isPortal = !isMicro && !isGuias && !isQualy;
+  // Guías ya no usa este sidebar: tiene interfaz propia
+  const isPortal = !isMicro && !isQualy;
 
   return (
     <aside
@@ -278,7 +258,6 @@ export default function Sidebar({
         collapsed ? "w-[72px]" : "w-[260px]"
       }`}
     >
-      {/* Logo siempre al portal */}
       <div className="h-[76px] flex items-center gap-2 px-3 border-b border-slate-100">
         {!collapsed && (
           <Link href="/dashboard" className="flex-1 flex items-center min-w-0 py-1">
@@ -308,7 +287,6 @@ export default function Sidebar({
       <nav className="flex-1 py-4 px-2.5 space-y-0.5 overflow-y-auto">
         {isPortal && <PortalNav collapsed={collapsed} pathname={pathname} />}
         {isMicro && <MicroNav collapsed={collapsed} pathname={pathname} />}
-        {isGuias && <GuiasNav collapsed={collapsed} pathname={pathname} />}
         {isQualy && <QualyNav collapsed={collapsed} />}
       </nav>
 
