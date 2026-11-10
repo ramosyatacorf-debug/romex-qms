@@ -74,10 +74,10 @@ const GRUPOS: Grupo[] = [
       {
         code: "A-LDAMP-R-017",
         title: "Limpieza de almacenes",
-        description: "Limpieza y desinfección de almacenes",
+        description: "Limpieza y desinfección R/NR · desinfectante y ppm",
         freq: "Diario",
         href: "/dashboard/microbiologia/almacenes",
-        ready: false,
+        ready: true,
       },
       {
         code: "LM-IP-R-003",
@@ -85,6 +85,14 @@ const GRUPOS: Grupo[] = [
         description: "Inspección de servicios higiénicos",
         freq: "Diario",
         href: "/dashboard/microbiologia/sshh",
+        ready: true,
+      },
+      {
+        code: "LM-MM",
+        title: "Monitoreo ambiental",
+        description: "Placas por área · RTAMV, mohos y levaduras",
+        freq: "Mensual",
+        href: "/dashboard/microbiologia/monitoreo",
         ready: true,
       },
     ],
@@ -177,7 +185,6 @@ export default function MicrobiologiaHubPage() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col">
-      {/* Barra propia del sistema Microbiología */}
       <header className="sticky top-0 z-40 bg-white border-b border-slate-200">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
@@ -225,7 +232,6 @@ export default function MicrobiologiaHubPage() {
           </p>
         </div>
 
-        {/* Accesos rápidos a los listos */}
         {activos.length > 0 && (
           <div className="mb-10">
             <p className="text-[12px] font-medium text-slate-400 uppercase tracking-wide mb-3">
