@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Microscope, FlaskConical, FolderOpen } from "lucide-react";
+import { ArrowUpRight, Microscope, FlaskConical, FolderOpen } from "lucide-react";
 
 interface ModuleCardProps {
   number: string;
@@ -7,6 +7,7 @@ interface ModuleCardProps {
   description?: string;
   href?: string;
   icon?: "microscope" | "flask" | "folder" | "empty";
+  status?: "ready" | "soon";
 }
 
 const icons = {
@@ -16,57 +17,91 @@ const icons = {
   empty: null,
 };
 
+const tone = {
+  microscope: {
+    iconBg: "bg-violet-50",
+    iconColor: "text-violet-600",
+    hover: "hover:border-violet-200 hover:shadow-violet-50/50",
+  },
+  flask: {
+    iconBg: "bg-sky-50",
+    iconColor: "text-sky-600",
+    hover: "hover:border-sky-200 hover:shadow-sky-50/50",
+  },
+  folder: {
+    iconBg: "bg-amber-50",
+    iconColor: "text-amber-600",
+    hover: "hover:border-amber-200 hover:shadow-amber-50/50",
+  },
+  empty: {
+    iconBg: "bg-slate-50",
+    iconColor: "text-slate-300",
+    hover: "",
+  },
+};
+
 export default function ModuleCard({
   number,
   title,
   description,
   href = "#",
   icon = "empty",
+  status = "ready",
 }: ModuleCardProps) {
   const Icon = icons[icon];
   const isEmpty = !title;
+  const isSoon = status === "soon" || isEmpty;
+  const t = tone[icon];
 
-  return (
-    <Link
-      href={href}
-      className={`group bg-white border border-slate-200 rounded-xl p-5 transition-all duration-200 min-h-[140px] flex flex-col ${
-        isEmpty
-          ? "opacity-55 pointer-events-none"
-          : "hover:border-blue-200 hover:shadow-md hover:shadow-blue-50/40"
+  const body = (
+    <div
+      className={`group relative bg-white border border-slate-200 rounded-2xl p-5 transition-all duration-200 min-h-[152px] flex flex-col ${
+        isSoon
+          ? "opacity-60 pointer-events-none"
+          : `${t.hover} hover:shadow-md`
       }`}
     >
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="min-w-0">
-          <p className="text-[11px] text-slate-400 font-medium mb-1 tracking-wide uppercase">
-            {number}
-          </p>
-          <h3 className="text-[14.5px] font-semibold text-slate-800 leading-snug">
-            {title || "Próximamente"}
-          </h3>
-          {description && (
-            <p className="text-[12.5px] text-slate-500 mt-1.5 leading-relaxed line-clamp-2">
-              {description}
-            </p>
-          )}
-        </div>
-
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <p className="text-[11px] text-slate-400 font-medium tracking-wide uppercase">
+          {number}
+        </p>
         {Icon && (
-          <div className="w-9 h-9 rounded-lg bg-teal-50 flex items-center justify-center text-teal-600 shrink-0">
-            <Icon size={18} strokeWidth={1.6} />
+          <div
+            className={`w-10 h-10 rounded-xl ${t.iconBg} ${t.iconColor} flex items-center justify-center shrink-0`}
+          >
+            <Icon size={19} strokeWidth={1.6} />
           </div>
         )}
       </div>
 
-      <div className="mt-auto pt-3 border-t border-slate-100 flex justify-end">
-        <ArrowRight
-          size={15}
-          className={`transition-all ${
-            isEmpty
-              ? "text-slate-200"
-              : "text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5"
-          }`}
-        />
+      <h3 className="text-[15px] font-semibold text-slate-800 leading-snug mb-1.5">
+        {title || "Próximamente"}
+      </h3>
+
+      {description && (
+        <p className="text-[13px] text-slate-500 leading-relaxed line-clamp-2 flex-1">
+          {description}
+        </p>
+      )}
+
+      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+        {isSoon ? (
+          <span className="text-[12px] text-slate-400">En preparación</span>
+        ) : (
+          <span className="text-[12.5px] font-medium text-slate-500 group-hover:text-slate-800 transition-colors">
+            Abrir sistema
+          </span>
+        )}
+        {!isSoon && (
+          <ArrowUpRight
+            size={16}
+            className="text-slate-300 group-hover:text-slate-600 transition-colors"
+          />
+        )}
       </div>
-    </Link>
+    </div>
   );
+
+  if (isSoon) return body;
+  return <Link href={href}>{body}</Link>;
 }
