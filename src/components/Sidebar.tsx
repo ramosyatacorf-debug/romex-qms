@@ -95,6 +95,7 @@ function PortalNav({ collapsed, pathname }: { collapsed: boolean; pathname: stri
         href="/dashboard/microbiologia"
         active={false}
         collapsed={collapsed}
+        external
         icon={<Microscope size={18} strokeWidth={1.8} className="shrink-0" />}
       >
         Microbiología
@@ -188,12 +189,6 @@ function MicroNav({ collapsed, pathname }: { collapsed: boolean; pathname: strin
           </NavLink>
         );
       })}
-
-      {!collapsed && (
-        <p className="px-3 pt-4 pb-1 text-[11px] text-slate-400">
-          Más registros en el hub del módulo
-        </p>
-      )}
     </>
   );
 }
@@ -247,10 +242,12 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
 
-  const isMicro = pathname.startsWith("/dashboard/microbiologia");
+  // Hub de micro y guías tienen UI propia; el sidebar solo aplica a sub-registros y Qualy
+  const isMicroSub =
+    pathname.startsWith("/dashboard/microbiologia/") &&
+    pathname !== "/dashboard/microbiologia";
   const isQualy = pathname.startsWith("/dashboard/qualy-ai");
-  // Guías ya no usa este sidebar: tiene interfaz propia
-  const isPortal = !isMicro && !isQualy;
+  const isPortal = !isMicroSub && !isQualy;
 
   return (
     <aside
@@ -286,7 +283,7 @@ export default function Sidebar({
 
       <nav className="flex-1 py-4 px-2.5 space-y-0.5 overflow-y-auto">
         {isPortal && <PortalNav collapsed={collapsed} pathname={pathname} />}
-        {isMicro && <MicroNav collapsed={collapsed} pathname={pathname} />}
+        {isMicroSub && <MicroNav collapsed={collapsed} pathname={pathname} />}
         {isQualy && <QualyNav collapsed={collapsed} />}
       </nav>
 
