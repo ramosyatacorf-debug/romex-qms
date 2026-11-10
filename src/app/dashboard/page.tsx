@@ -21,7 +21,7 @@ export default function DashboardPage() {
               ¡Hola Rodrigo!
             </h1>
             <p className="text-slate-500 text-[14.5px] leading-relaxed">
-              Bienvenido al ecosistema de Exportadora RomEx S.A. Elige un sistema para comenzar.
+              Bienvenido al ecosistema de Exportadora RomEx S.A. Cada sistema se abre de forma independiente.
             </p>
           </div>
 
@@ -33,6 +33,7 @@ export default function DashboardPage() {
               href="/dashboard/microbiologia"
               icon="microscope"
               status="ready"
+              newWindow
             />
             <ModuleCard
               number="Sistema 02"

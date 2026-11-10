@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import Sidebar from "@/components/Sidebar";
+import Image from "next/image";
 import {
   Microscope,
   Bug,
@@ -11,6 +10,7 @@ import {
   ClipboardList,
   CalendarDays,
   Shirt,
+  Home,
 } from "lucide-react";
 
 type Freq = "Diario" | "Semanal" | "Mensual" | "Por evento";
@@ -171,55 +171,106 @@ const FREQ_STYLE: Record<Freq, string> = {
 };
 
 export default function MicrobiologiaHubPage() {
-  const [collapsed, setCollapsed] = useState(false);
   const listos = GRUPOS.flatMap((g) => g.items).filter((i) => i.ready).length;
   const total = GRUPOS.flatMap((g) => g.items).length;
+  const activos = GRUPOS.flatMap((g) => g.items).filter((i) => i.ready);
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc]">
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
-
-      <main className="flex-1 flex flex-col min-w-0">
-        <div className="flex-1 px-6 py-8 md:px-10 md:py-10 max-w-5xl">
-          <div className="mb-9">
-            <p className="text-[12px] font-medium text-violet-600 tracking-wide uppercase mb-2">
-              Sistema de laboratorio
-            </p>
-            <h1 className="text-[24px] font-semibold text-slate-800 tracking-tight mb-1.5">
-              Microbiología
-            </h1>
-            <p className="text-slate-500 text-[14px] max-w-xl">
-              Registros diarios y periódicos. {listos} de {total} formatos activos.
-            </p>
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col">
+      {/* Barra propia del sistema Microbiología */}
+      <header className="sticky top-0 z-40 bg-white border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 min-w-0">
+            <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
+              <Image
+                src="/logo_romex.jpg"
+                alt="RomEx"
+                width={100}
+                height={28}
+                className="object-contain h-7 w-auto"
+                style={{ mixBlendMode: "multiply" }}
+                priority
+              />
+            </Link>
+            <div className="hidden sm:block h-5 w-px bg-slate-200" />
+            <div className="min-w-0">
+              <p className="text-[13px] font-semibold text-slate-800 truncate">Microbiología</p>
+              <p className="text-[11px] text-violet-600 font-medium hidden sm:block">Sistema de laboratorio</p>
+            </div>
           </div>
 
-          <div className="space-y-10">
-            {GRUPOS.map((grupo) => (
-              <section key={grupo.id}>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
-                    {grupo.icon}
-                  </div>
-                  <div>
-                    <h2 className="text-[15px] font-semibold text-slate-800">{grupo.title}</h2>
-                    <p className="text-[12.5px] text-slate-500">{grupo.subtitle}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {grupo.items.map((item) => (
-                    <RegistroCard key={item.code} item={item} />
-                  ))}
-                </div>
-              </section>
-            ))}
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="hidden sm:inline text-[12px] text-slate-400">
+              {listos}/{total} activos
+            </span>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-[13px] font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+              title="Volver al portal QMS"
+            >
+              <Home size={15} />
+              <span className="hidden md:inline">Portal</span>
+            </Link>
           </div>
         </div>
+      </header>
 
-        <footer className="py-3 text-center text-[11px] text-slate-400 border-t border-slate-100">
-          Exportadora RomEx S.A. — Microbiología
-        </footer>
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
+        <div className="mb-8">
+          <h1 className="text-[22px] font-semibold text-slate-800 tracking-tight mb-1">
+            Registros del laboratorio
+          </h1>
+          <p className="text-slate-500 text-[14px]">
+            Selecciona un formato para capturar o consultar datos.
+          </p>
+        </div>
+
+        {/* Accesos rápidos a los listos */}
+        {activos.length > 0 && (
+          <div className="mb-10">
+            <p className="text-[12px] font-medium text-slate-400 uppercase tracking-wide mb-3">
+              Acceso rápido
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {activos.map((item) => (
+                <Link
+                  key={item.code}
+                  href={item.href}
+                  className="inline-flex items-center gap-2 h-9 px-3.5 rounded-lg bg-white border border-slate-200 text-[13px] font-medium text-slate-700 hover:border-violet-300 hover:text-violet-700 hover:bg-violet-50/50 transition-colors"
+                >
+                  {item.title}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-10">
+          {GRUPOS.map((grupo) => (
+            <section key={grupo.id}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-9 h-9 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center">
+                  {grupo.icon}
+                </div>
+                <div>
+                  <h2 className="text-[15px] font-semibold text-slate-800">{grupo.title}</h2>
+                  <p className="text-[12.5px] text-slate-500">{grupo.subtitle}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {grupo.items.map((item) => (
+                  <RegistroCard key={item.code} item={item} />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
       </main>
+
+      <footer className="py-3 text-center text-[11px] text-slate-400 border-t border-slate-100">
+        Exportadora RomEx S.A. — Microbiología
+      </footer>
     </div>
   );
 }
