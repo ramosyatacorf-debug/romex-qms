@@ -49,6 +49,7 @@ export default function DashboardPage() {
               href="/dashboard/guias"
               icon="folder"
               status="ready"
+              newWindow
             />
             <ModuleCard number="Sistema 04" title="" href="#" icon="empty" status="soon" />
             <ModuleCard number="Sistema 05" title="" href="#" icon="empty" status="soon" />
