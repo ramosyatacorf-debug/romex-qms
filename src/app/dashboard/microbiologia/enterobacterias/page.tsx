@@ -1,17 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import Sidebar from "@/components/Sidebar";
-import {
-  ChevronRight,
-  ArrowLeft,
-  Plus,
-  Save,
-  Trash2,
-  Eye,
-  FileText,
-} from "lucide-react";
+import MicroShell from "@/components/MicroShell";
+import { ArrowLeft, Plus, Save, Trash2, Eye, FileText } from "lucide-react";
 
 interface PuntoResultado {
   codigo: string;
@@ -33,25 +24,19 @@ interface RegistroEB {
   createdAt: string;
 }
 
-const BARREDURAS_BASE: Omit<
-  PuntoResultado,
-  "peso" | "resultado" | "observaciones" | "accionCorrectiva"
->[] = [
+const BARREDURAS_BASE = [
   { codigo: "EBB-1", punto: "Barredura de Sala de Tostado (GRANDE)" },
   { codigo: "EBB-2", punto: "Barredura en Sala de Homogenizado" },
   { codigo: "EBB-3", punto: "Barredura en Sala de Prensa" },
   { codigo: "EBB-4", punto: "Barredura en Sala de Temperado" },
   { codigo: "EBB-5", punto: "Barredura en Sala de Pulverizado" },
-  { codigo: "EBB-6", punto: "Barredura de Sala de Tostado (PEQUENO)" },
-  { codigo: "EBB-7", punto: "Barredura en Almacen de Productos Terminados" },
+  { codigo: "EBB-6", punto: "Barredura de Sala de Tostado (PEQUEÑO)" },
+  { codigo: "EBB-7", punto: "Barredura en Almacén de Productos Terminados" },
   { codigo: "EBB-8", punto: "Barredura en sala de Esterilizado" },
   { codigo: "EBB-9", punto: "Barredura en sala de alcalinizado - tanque reactor" },
 ];
 
-const RESIDUOS_BASE: Omit<
-  PuntoResultado,
-  "peso" | "resultado" | "observaciones" | "accionCorrectiva"
->[] = [
+const RESIDUOS_BASE = [
   { codigo: "EBR-1", punto: "Residuo en tanques de Homogenizado" },
   { codigo: "EBR-2", punto: "Residuo en Faja y/o bandeja Receptora de Torta" },
   { codigo: "EBR-3", punto: "Residuo en Bandeja receptoras de residuos de Torta" },
@@ -67,7 +52,7 @@ function emptyPuntos(base: typeof BARREDURAS_BASE): PuntoResultado[] {
   return base.map((b) => ({
     ...b,
     peso: "",
-    resultado: "menor a 10 ufc/grs",
+    resultado: "<10 ufc/grs",
     observaciones: "",
     accionCorrectiva: "",
   }));
@@ -88,13 +73,13 @@ function saveRegistros(items: RegistroEB[]) {
 }
 
 function formatDateDisplay(iso: string) {
-  if (!iso) return "-";
+  if (!iso) return "—";
   const [y, m, d] = iso.split("-");
   return `${d}/${m}/${y}`;
 }
 
 const inputClass =
-  "w-full h-10 px-3 rounded-lg border border-slate-200 text-[13.5px] text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10";
+  "w-full h-10 px-3 rounded-lg border border-slate-200 text-[13.5px] text-slate-800 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/10";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -123,7 +108,7 @@ function PuntoCard({
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-4">
       <div className="mb-3">
-        <p className="text-[12px] font-semibold text-blue-600">{p.codigo}</p>
+        <p className="text-[12px] font-semibold text-violet-600">{p.codigo}</p>
         <p className="text-[13.5px] font-medium text-slate-800 mt-0.5">{p.punto}</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -131,13 +116,13 @@ function PuntoCard({
           <input value={p.peso} onChange={(e) => onChange("peso", e.target.value)} placeholder="22,5 grs" className={inputClass} />
         </Field>
         <Field label="Resultado UFC/g">
-          <input value={p.resultado} onChange={(e) => onChange("resultado", e.target.value)} placeholder="menor a 10 ufc/grs" className={inputClass} />
+          <input value={p.resultado} onChange={(e) => onChange("resultado", e.target.value)} placeholder="<10 ufc/grs" className={inputClass} />
         </Field>
         <Field label="Observaciones">
-          <input value={p.observaciones} onChange={(e) => onChange("observaciones", e.target.value)} placeholder="barrido de toda el area" className={inputClass} />
+          <input value={p.observaciones} onChange={(e) => onChange("observaciones", e.target.value)} placeholder="barrido de toda el área" className={inputClass} />
         </Field>
-        <Field label="Accion correctiva">
-          <input value={p.accionCorrectiva} onChange={(e) => onChange("accionCorrectiva", e.target.value)} placeholder="-" className={inputClass} />
+        <Field label="Acción correctiva">
+          <input value={p.accionCorrectiva} onChange={(e) => onChange("accionCorrectiva", e.target.value)} placeholder="—" className={inputClass} />
         </Field>
       </div>
     </div>
@@ -151,7 +136,7 @@ function ViewTable({ points }: { points: PuntoResultado[] }) {
         <table className="w-full text-left text-[13px]">
           <thead>
             <tr className="bg-slate-50 text-slate-500 border-b border-slate-100">
-              <th className="px-4 py-2.5 font-medium">Codigo</th>
+              <th className="px-4 py-2.5 font-medium">Código</th>
               <th className="px-4 py-2.5 font-medium">Punto</th>
               <th className="px-4 py-2.5 font-medium">Peso</th>
               <th className="px-4 py-2.5 font-medium">Resultado</th>
@@ -161,11 +146,11 @@ function ViewTable({ points }: { points: PuntoResultado[] }) {
           <tbody>
             {points.map((p) => (
               <tr key={p.codigo} className="border-b border-slate-50 last:border-0">
-                <td className="px-4 py-2.5 font-medium text-blue-600 whitespace-nowrap">{p.codigo}</td>
+                <td className="px-4 py-2.5 font-medium text-violet-600 whitespace-nowrap">{p.codigo}</td>
                 <td className="px-4 py-2.5 text-slate-700 max-w-[220px]">{p.punto}</td>
-                <td className="px-4 py-2.5 text-slate-600 whitespace-nowrap">{p.peso || "-"}</td>
-                <td className="px-4 py-2.5 font-medium text-slate-800 whitespace-nowrap">{p.resultado || "-"}</td>
-                <td className="px-4 py-2.5 text-slate-500">{p.observaciones || "-"}</td>
+                <td className="px-4 py-2.5 text-slate-600 whitespace-nowrap">{p.peso || "—"}</td>
+                <td className="px-4 py-2.5 font-medium text-slate-800 whitespace-nowrap">{p.resultado || "—"}</td>
+                <td className="px-4 py-2.5 text-slate-500">{p.observaciones || "—"}</td>
               </tr>
             ))}
           </tbody>
@@ -176,7 +161,6 @@ function ViewTable({ points }: { points: PuntoResultado[] }) {
 }
 
 export default function EnterobacteriasPage() {
-  const [collapsed, setCollapsed] = useState(false);
   const [registros, setRegistros] = useState<RegistroEB[]>([]);
   const [mode, setMode] = useState<"lista" | "nuevo" | "ver">("lista");
   const [selected, setSelected] = useState<RegistroEB | null>(null);
@@ -239,7 +223,7 @@ export default function EnterobacteriasPage() {
         barreduras,
         residuos,
         eficacia,
-        analista: analista.trim() || "-",
+        analista: analista.trim() || "—",
         createdAt: new Date().toISOString(),
       };
       const updated = [nuevo, ...registros];
@@ -253,7 +237,7 @@ export default function EnterobacteriasPage() {
   };
 
   const handleDelete = (id: string) => {
-    if (!confirm("Eliminar este registro de enterobacterias?")) return;
+    if (!confirm("¿Eliminar este registro de enterobacterias?")) return;
     const updated = registros.filter((r) => r.id !== id);
     setRegistros(updated);
     saveRegistros(updated);
@@ -264,160 +248,144 @@ export default function EnterobacteriasPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc]">
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
-      <main className="flex-1 flex flex-col min-w-0">
-        <div className="flex-1 px-6 py-8 md:px-10 md:py-10 max-w-5xl">
-          <div className="flex items-center gap-2 text-[13px] text-slate-400 mb-4">
-            <Link href="/dashboard" className="hover:text-slate-600">Inicio</Link>
-            <ChevronRight size={14} />
-            <Link href="/dashboard/microbiologia" className="hover:text-slate-600">Microbiologia</Link>
-            <ChevronRight size={14} />
-            <span className="text-slate-600">Enterobacterias</span>
+    <MicroShell title="Enterobacterias" code="LM-RAE-004 · Edición 21">
+      {mode === "lista" && (
+        <>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+            <div>
+              <h1 className="text-[22px] font-semibold text-slate-800 tracking-tight mb-1">
+                Análisis de Enterobacterias
+              </h1>
+              <p className="text-[13.5px] text-slate-500">Barreduras y residuos · frecuencia mensual</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                resetForm();
+                setMode("nuevo");
+              }}
+              className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-[14px] font-medium"
+            >
+              <Plus size={16} />
+              Nuevo registro
+            </button>
           </div>
 
-          {mode === "lista" && (
-            <>
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
-                <div>
-                  <p className="text-[11px] font-medium text-slate-400 tracking-wide mb-1">LM-RAE-004 · Edicion 21</p>
-                  <h1 className="text-[22px] font-semibold text-slate-800 tracking-tight mb-1">Analisis de Enterobacterias</h1>
-                  <p className="text-[13.5px] text-slate-500">Barreduras y residuos · frecuencia mensual</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    resetForm();
-                    setMode("nuevo");
-                  }}
-                  className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[14px] font-medium"
-                >
-                  <Plus size={16} />
-                  Nuevo registro
-                </button>
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+            <div className="bg-white border border-slate-200 rounded-xl p-4">
+              <p className="text-[12px] font-medium text-slate-500 mb-2">Parámetros barreduras</p>
+              <ul className="text-[12.5px] text-slate-600 space-y-1">
+                <li><span className="text-emerald-600 font-medium">< 200</span> ufc/g · Buenas</li>
+                <li><span className="text-amber-600 font-medium">200–500</span> ufc/g · Aceptables</li>
+                <li><span className="text-red-600 font-medium">> 500</span> ufc/g · Inaceptables</li>
+              </ul>
+            </div>
+            <div className="bg-white border border-slate-200 rounded-xl p-4">
+              <p className="text-[12px] font-medium text-slate-500 mb-2">Parámetros residuos</p>
+              <p className="text-[12.5px] text-slate-600">
+                EBR: <span className="font-medium text-slate-800">< 10 UFC/g</span>
+              </p>
+            </div>
+          </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-                <div className="bg-white border border-slate-200 rounded-xl p-4">
-                  <p className="text-[12px] font-medium text-slate-500 mb-2">Parametros barreduras</p>
-                  <ul className="text-[12.5px] text-slate-600 space-y-1">
-                    <li><span className="text-emerald-600 font-medium">menor a 200</span> ufc/g · Buenas</li>
-                    <li><span className="text-amber-600 font-medium">200-500</span> ufc/g · Aceptables</li>
-                    <li><span className="text-red-600 font-medium">mayor a 500</span> ufc/g · Inaceptables</li>
-                  </ul>
-                </div>
-                <div className="bg-white border border-slate-200 rounded-xl p-4">
-                  <p className="text-[12px] font-medium text-slate-500 mb-2">Parametros residuos</p>
-                  <p className="text-[12.5px] text-slate-600">
-                    EBR: <span className="font-medium text-slate-800">menor a 10 UFC/g</span>
-                  </p>
-                </div>
-              </div>
-
-              {sorted.length === 0 ? (
-                <div className="flex flex-col items-center py-16 bg-white border border-dashed border-slate-200 rounded-2xl">
-                  <FileText size={28} className="text-slate-300 mb-3" />
-                  <p className="text-[14px] font-medium text-slate-700 mb-1">Sin registros aun</p>
-                  <p className="text-[13px] text-slate-400 mb-5">Crea el primer analisis de enterobacterias</p>
-                  <button type="button" onClick={() => setMode("nuevo")} className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-blue-600 text-white text-[13.5px] font-medium">
-                    <Plus size={15} /> Nuevo registro
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {sorted.map((r) => (
-                    <div key={r.id} className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl">
-                      <div className="w-10 h-10 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
-                        <FileText size={18} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[14px] font-semibold text-slate-800">Toma: {formatDateDisplay(r.fechaToma)}</p>
-                        <p className="text-[13px] text-slate-500 mt-0.5">Analisis: {formatDateDisplay(r.fechaAnalisis)} · {r.analista}</p>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button type="button" onClick={() => { setSelected(r); setMode("ver"); }} className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600" title="Ver">
-                          <Eye size={16} />
-                        </button>
-                        <button type="button" onClick={() => handleDelete(r.id)} className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500" title="Eliminar">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-
-          {mode === "nuevo" && (
-            <form onSubmit={handleSave}>
-              <button type="button" onClick={() => setMode("lista")} className="inline-flex items-center gap-2 text-[13.5px] text-slate-500 hover:text-slate-800 mb-6">
-                <ArrowLeft size={15} /> Volver al listado
+          {sorted.length === 0 ? (
+            <div className="flex flex-col items-center py-16 bg-white border border-dashed border-slate-200 rounded-2xl">
+              <FileText size={28} className="text-slate-300 mb-3" />
+              <p className="text-[14px] font-medium text-slate-700 mb-1">Sin registros aún</p>
+              <p className="text-[13px] text-slate-400 mb-5">Crea el primer análisis de enterobacterias</p>
+              <button type="button" onClick={() => setMode("nuevo")} className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-violet-600 text-white text-[13.5px] font-medium">
+                <Plus size={15} /> Nuevo registro
               </button>
-              <h1 className="text-[20px] font-semibold text-slate-800 mb-1">Nuevo registro</h1>
-              <p className="text-[13.5px] text-slate-500 mb-6">LM-RAE-004 · Enterobacterias</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                <Field label="Fecha de toma de muestra">
-                  <input required type="date" value={fechaToma} onChange={(e) => setFechaToma(e.target.value)} className={inputClass} />
-                </Field>
-                <Field label="Fecha de analisis">
-                  <input required type="date" value={fechaAnalisis} onChange={(e) => setFechaAnalisis(e.target.value)} className={inputClass} />
-                </Field>
-              </div>
-              <SectionTitle>Barreduras (EBB)</SectionTitle>
-              <div className="space-y-3 mb-8">
-                {barreduras.map((p, i) => (
-                  <PuntoCard key={p.codigo} p={p} onChange={(field, value) => updatePunto("barreduras", i, field, value)} />
-                ))}
-              </div>
-              <SectionTitle>Residuos (EBR)</SectionTitle>
-              <div className="space-y-3 mb-8">
-                {residuos.map((p, i) => (
-                  <PuntoCard key={p.codigo} p={p} onChange={(field, value) => updatePunto("residuos", i, field, value)} />
-                ))}
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                <Field label="Eficacia de la accion correctiva">
-                  <input value={eficacia} onChange={(e) => setEficacia(e.target.value)} placeholder="ok" className={inputClass} />
-                </Field>
-                <Field label="Analista de microbiologia">
-                  <input value={analista} onChange={(e) => setAnalista(e.target.value)} placeholder="Nombre del analista" className={inputClass} />
-                </Field>
-              </div>
-              <div className="flex gap-3">
-                <button type="button" onClick={() => setMode("lista")} className="h-11 px-5 rounded-xl border border-slate-200 text-[14px] font-medium text-slate-600 hover:bg-slate-50">Cancelar</button>
-                <button type="submit" disabled={saving} className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[14px] font-medium disabled:opacity-60">
-                  <Save size={15} />
-                  {saving ? "Guardando..." : "Guardar registro"}
-                </button>
-              </div>
-            </form>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {sorted.map((r) => (
+                <div key={r.id} className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl">
+                  <div className="w-10 h-10 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
+                    <FileText size={18} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[14px] font-semibold text-slate-800">Toma: {formatDateDisplay(r.fechaToma)}</p>
+                    <p className="text-[13px] text-slate-500 mt-0.5">Análisis: {formatDateDisplay(r.fechaAnalisis)} · {r.analista}</p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button type="button" onClick={() => { setSelected(r); setMode("ver"); }} className="p-2 rounded-lg hover:bg-violet-50 text-slate-400 hover:text-violet-600" title="Ver">
+                      <Eye size={16} />
+                    </button>
+                    <button type="button" onClick={() => handleDelete(r.id)} className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500" title="Eliminar">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
+        </>
+      )}
 
-          {mode === "ver" && selected && (
-            <>
-              <button type="button" onClick={() => { setSelected(null); setMode("lista"); }} className="inline-flex items-center gap-2 text-[13.5px] text-slate-500 hover:text-slate-800 mb-6">
-                <ArrowLeft size={15} /> Volver al listado
-              </button>
-              <div className="mb-6">
-                <p className="text-[11px] font-medium text-slate-400 mb-1">LM-RAE-004</p>
-                <h1 className="text-[20px] font-semibold text-slate-800">Toma {formatDateDisplay(selected.fechaToma)}</h1>
-                <p className="text-[13.5px] text-slate-500 mt-1">Analisis {formatDateDisplay(selected.fechaAnalisis)} · Analista: {selected.analista}</p>
-              </div>
-              <SectionTitle>Barreduras</SectionTitle>
-              <ViewTable points={selected.barreduras} />
-              <SectionTitle>Residuos</SectionTitle>
-              <ViewTable points={selected.residuos} />
-              <div className="mt-6 p-4 bg-white border border-slate-200 rounded-xl text-[13.5px] text-slate-600">
-                <p><span className="text-slate-400">Eficacia:</span> <span className="font-medium text-slate-800">{selected.eficacia || "-"}</span></p>
-              </div>
-            </>
-          )}
-        </div>
-        <footer className="py-3 text-center text-[11px] text-slate-400 border-t border-slate-100">
-          Exportadora RomEx S.A. — QMS Sistema de Gestion de Laboratorio
-        </footer>
-      </main>
-    </div>
+      {mode === "nuevo" && (
+        <form onSubmit={handleSave}>
+          <button type="button" onClick={() => setMode("lista")} className="inline-flex items-center gap-2 text-[13.5px] text-slate-500 hover:text-slate-800 mb-6">
+            <ArrowLeft size={15} /> Volver al listado
+          </button>
+          <h1 className="text-[20px] font-semibold text-slate-800 mb-1">Nuevo registro</h1>
+          <p className="text-[13.5px] text-slate-500 mb-6">LM-RAE-004 · Enterobacterias</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            <Field label="Fecha de toma de muestra">
+              <input required type="date" value={fechaToma} onChange={(e) => setFechaToma(e.target.value)} className={inputClass} />
+            </Field>
+            <Field label="Fecha de análisis">
+              <input required type="date" value={fechaAnalisis} onChange={(e) => setFechaAnalisis(e.target.value)} className={inputClass} />
+            </Field>
+          </div>
+          <SectionTitle>Barreduras (EBB)</SectionTitle>
+          <div className="space-y-3 mb-8">
+            {barreduras.map((p, i) => (
+              <PuntoCard key={p.codigo} p={p} onChange={(field, value) => updatePunto("barreduras", i, field, value)} />
+            ))}
+          </div>
+          <SectionTitle>Residuos (EBR)</SectionTitle>
+          <div className="space-y-3 mb-8">
+            {residuos.map((p, i) => (
+              <PuntoCard key={p.codigo} p={p} onChange={(field, value) => updatePunto("residuos", i, field, value)} />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            <Field label="Eficacia de la acción correctiva">
+              <input value={eficacia} onChange={(e) => setEficacia(e.target.value)} placeholder="ok" className={inputClass} />
+            </Field>
+            <Field label="Analista de microbiología">
+              <input value={analista} onChange={(e) => setAnalista(e.target.value)} placeholder="Nereyda Huachua" className={inputClass} />
+            </Field>
+          </div>
+          <div className="flex gap-3">
+            <button type="button" onClick={() => setMode("lista")} className="h-11 px-5 rounded-xl border border-slate-200 text-[14px] font-medium text-slate-600 hover:bg-slate-50">Cancelar</button>
+            <button type="submit" disabled={saving} className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-[14px] font-medium disabled:opacity-60">
+              <Save size={15} />
+              {saving ? "Guardando..." : "Guardar registro"}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {mode === "ver" && selected && (
+        <>
+          <button type="button" onClick={() => { setSelected(null); setMode("lista"); }} className="inline-flex items-center gap-2 text-[13.5px] text-slate-500 hover:text-slate-800 mb-6">
+            <ArrowLeft size={15} /> Volver al listado
+          </button>
+          <div className="mb-6">
+            <h1 className="text-[20px] font-semibold text-slate-800">Toma {formatDateDisplay(selected.fechaToma)}</h1>
+            <p className="text-[13.5px] text-slate-500 mt-1">Análisis {formatDateDisplay(selected.fechaAnalisis)} · Analista: {selected.analista}</p>
+          </div>
+          <SectionTitle>Barreduras</SectionTitle>
+          <ViewTable points={selected.barreduras} />
+          <SectionTitle>Residuos</SectionTitle>
+          <ViewTable points={selected.residuos} />
+          <div className="mt-6 p-4 bg-white border border-slate-200 rounded-xl text-[13.5px] text-slate-600">
+            <p><span className="text-slate-400">Eficacia:</span> <span className="font-medium text-slate-800">{selected.eficacia || "—"}</span></p>
+          </div>
+        </>
+      )}
+    </MicroShell>
   );
 }
