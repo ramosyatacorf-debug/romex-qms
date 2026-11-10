@@ -22,19 +22,19 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="w-full max-w-[400px]">
-        {/* Logo centrado */}
+        {/* Logo sin caja — el blanco del JPG se funde con el fondo */}
         <div className="flex justify-center mb-8">
           <Image
             src="/logo_romex.jpg"
             alt="RomEx Quality Management System"
-            width={150}
-            height={40}
+            width={160}
+            height={48}
             className="object-contain"
+            style={{ mixBlendMode: "multiply" }}
             priority
           />
         </div>
 
-        {/* Card elegante */}
         <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 px-8 py-9">
           <h1 className="text-[20px] font-semibold text-slate-800 text-center mb-1">
             Iniciar sesión
@@ -44,7 +44,6 @@ export default function LoginPage() {
           </p>
 
           <form onSubmit={handleLogin} className="space-y-5">
-            {/* Email */}
             <div>
               <label className="block text-[12.5px] font-medium text-slate-600 mb-1.5">
                 Correo electrónico
@@ -65,7 +64,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Password */}
             <div>
               <label className="block text-[12.5px] font-medium text-slate-600 mb-1.5">
                 Contraseña
@@ -93,7 +91,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Botón */}
             <button
               type="submit"
               disabled={isLoading}
@@ -104,7 +101,6 @@ export default function LoginPage() {
           </form>
         </div>
 
-        {/* Footer */}
         <p className="text-center text-[11px] text-slate-400 mt-6">
           Exportadora RomEx S.A. — Quality Management System
         </p>
