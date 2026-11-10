@@ -11,6 +11,12 @@ import {
   User,
   Microscope,
   FolderOpen,
+  ArrowLeft,
+  Thermometer,
+  Bug,
+  FlaskConical,
+  Shirt,
+  FileText,
 } from "lucide-react";
 import QualyIcon from "@/components/QualyIcon";
 
@@ -20,16 +26,14 @@ interface SidebarProps {
   onToggle: () => void;
 }
 
-function NavItem({
+function NavLink({
   href,
-  title,
   active,
   collapsed,
   icon,
   children,
 }: {
   href: string;
-  title: string;
   active: boolean;
   collapsed: boolean;
   icon: React.ReactNode;
@@ -38,7 +42,7 @@ function NavItem({
   return (
     <Link
       href={href}
-      title={title}
+      title={typeof children === "string" ? children : undefined}
       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-colors ${
         active
           ? "bg-blue-50 text-blue-700"
@@ -46,8 +50,213 @@ function NavItem({
       } ${collapsed ? "justify-center px-0" : ""}`}
     >
       {icon}
-      {!collapsed && <span>{children}</span>}
+      {!collapsed && <span className="truncate">{children}</span>}
     </Link>
+  );
+}
+
+/** Menú del portal QMS — solo para elegir módulo */
+function PortalNav({ collapsed, pathname }: { collapsed: boolean; pathname: string }) {
+  return (
+    <>
+      <NavLink
+        href="/dashboard"
+        active={pathname === "/dashboard"}
+        collapsed={collapsed}
+        icon={<Home size={18} strokeWidth={pathname === "/dashboard" ? 2.2 : 1.8} className="shrink-0" />}
+      >
+        Portal
+      </NavLink>
+
+      {!collapsed && (
+        <p className="px-3 pt-5 pb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+          Sistemas
+        </p>
+      )}
+      {collapsed && <div className="h-3" />}
+
+      <NavLink
+        href="/dashboard/microbiologia"
+        active={false}
+        collapsed={collapsed}
+        icon={<Microscope size={18} strokeWidth={1.8} className="shrink-0" />}
+      >
+        Microbiología
+      </NavLink>
+
+      <NavLink
+        href="/dashboard/guias"
+        active={false}
+        collapsed={collapsed}
+        icon={<FolderOpen size={18} strokeWidth={1.8} className="shrink-0" />}
+      >
+        Gestión de Guías
+      </NavLink>
+
+      <NavLink
+        href="/dashboard/qualy-ai"
+        active={false}
+        collapsed={collapsed}
+        icon={<QualyIcon size={18} className="shrink-0" />}
+      >
+        Qualy AI
+      </NavLink>
+    </>
+  );
+}
+
+/** Menú propio del sistema Microbiología */
+function MicroNav({ collapsed, pathname }: { collapsed: boolean; pathname: string }) {
+  const items = [
+    {
+      href: "/dashboard/microbiologia",
+      label: "Inicio del módulo",
+      icon: <Home size={17} className="shrink-0" />,
+      exact: true,
+    },
+    {
+      href: "/dashboard/microbiologia/enterobacterias",
+      label: "Enterobacterias",
+      icon: <FileText size={17} className="shrink-0" />,
+    },
+    {
+      href: "/dashboard/microbiologia/ambientes",
+      label: "Control de ambientes",
+      icon: <Thermometer size={17} className="shrink-0" />,
+    },
+    {
+      href: "/dashboard/microbiologia/sshh",
+      label: "SS.HH.",
+      icon: <ClipboardIcon />,
+    },
+    {
+      href: "/dashboard/microbiologia/plagas",
+      label: "Plagas",
+      icon: <Bug size={17} className="shrink-0" />,
+    },
+  ];
+
+  return (
+    <>
+      {/* Volver al portal */}
+      <Link
+        href="/dashboard"
+        title="Volver al portal QMS"
+        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors mb-2 ${
+          collapsed ? "justify-center px-0" : ""
+        }`}
+      >
+        <ArrowLeft size={16} className="shrink-0" />
+        {!collapsed && <span>Portal QMS</span>}
+      </Link>
+
+      {!collapsed && (
+        <div className="px-3 py-2 mb-1">
+          <p className="text-[11px] font-semibold text-violet-600 uppercase tracking-wider">Microbiología</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Sistema de laboratorio</p>
+        </div>
+      )}
+
+      {items.map((item) => {
+        const active = item.exact
+          ? pathname === item.href
+          : pathname.startsWith(item.href);
+        return (
+          <NavLink
+            key={item.href}
+            href={item.href}
+            active={active}
+            collapsed={collapsed}
+            icon={item.icon}
+          >
+            {item.label}
+          </NavLink>
+        );
+      })}
+
+      {!collapsed && (
+        <p className="px-3 pt-4 pb-1 text-[11px] text-slate-400">
+          Más registros en el hub del módulo
+        </p>
+      )}
+    </>
+  );
+}
+
+function ClipboardIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg>
+  );
+}
+
+/** Menú propio del sistema Guías */
+function GuiasNav({ collapsed, pathname }: { collapsed: boolean; pathname: string }) {
+  return (
+    <>
+      <Link
+        href="/dashboard"
+        title="Volver al portal QMS"
+        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors mb-2 ${
+          collapsed ? "justify-center px-0" : ""
+        }`}
+      >
+        <ArrowLeft size={16} className="shrink-0" />
+        {!collapsed && <span>Portal QMS</span>}
+      </Link>
+
+      {!collapsed && (
+        <div className="px-3 py-2 mb-1">
+          <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-wider">Gestión de Guías</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Archivo de remisión</p>
+        </div>
+      )}
+
+      <NavLink
+        href="/dashboard/guias"
+        active={pathname.startsWith("/dashboard/guias")}
+        collapsed={collapsed}
+        icon={<FolderOpen size={17} strokeWidth={1.8} className="shrink-0" />}
+      >
+        Archivo de guías
+      </NavLink>
+    </>
+  );
+}
+
+/** Menú propio de Qualy AI */
+function QualyNav({ collapsed }: { collapsed: boolean }) {
+  return (
+    <>
+      <Link
+        href="/dashboard"
+        title="Volver al portal QMS"
+        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors mb-2 ${
+          collapsed ? "justify-center px-0" : ""
+        }`}
+      >
+        <ArrowLeft size={16} className="shrink-0" />
+        {!collapsed && <span>Portal QMS</span>}
+      </Link>
+
+      {!collapsed && (
+        <div className="px-3 py-2 mb-1">
+          <p className="text-[11px] font-semibold text-blue-600 uppercase tracking-wider">Qualy AI</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Asistente inteligente</p>
+        </div>
+      )}
+
+      <NavLink
+        href="/dashboard/qualy-ai"
+        active
+        collapsed={collapsed}
+        icon={<QualyIcon size={17} className="shrink-0" />}
+      >
+        Conversación
+      </NavLink>
+    </>
   );
 }
 
@@ -57,10 +266,11 @@ export default function Sidebar({
   onToggle,
 }: SidebarProps) {
   const pathname = usePathname();
-  const isHome = pathname === "/dashboard";
+
   const isMicro = pathname.startsWith("/dashboard/microbiologia");
   const isGuias = pathname.startsWith("/dashboard/guias");
   const isQualy = pathname.startsWith("/dashboard/qualy-ai");
+  const isPortal = !isMicro && !isGuias && !isQualy;
 
   return (
     <aside
@@ -68,7 +278,7 @@ export default function Sidebar({
         collapsed ? "w-[72px]" : "w-[260px]"
       }`}
     >
-      {/* Logo — portal RomEx QMS */}
+      {/* Logo siempre al portal */}
       <div className="h-[76px] flex items-center gap-2 px-3 border-b border-slate-100">
         {!collapsed && (
           <Link href="/dashboard" className="flex-1 flex items-center min-w-0 py-1">
@@ -78,6 +288,7 @@ export default function Sidebar({
               width={160}
               height={44}
               className="object-contain object-left w-full max-h-11"
+              style={{ mixBlendMode: "multiply" }}
               priority
             />
           </Link>
@@ -94,74 +305,26 @@ export default function Sidebar({
         </button>
       </div>
 
-      <nav className="flex-1 py-4 px-2.5 space-y-1 overflow-y-auto">
-        {/* Portal */}
-        <NavItem
-          href="/dashboard"
-          title="Inicio"
-          active={isHome}
-          collapsed={collapsed}
-          icon={
-            <Home size={18} strokeWidth={isHome ? 2.2 : 1.8} className="shrink-0" />
-          }
-        >
-          Inicio
-        </NavItem>
-
-        {/* Separador de módulos del ecosistema */}
-        {!collapsed && (
-          <p className="px-3 pt-4 pb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-            Módulos
-          </p>
-        )}
-        {collapsed && <div className="h-2" />}
-
-        <NavItem
-          href="/dashboard/microbiologia"
-          title="Microbiología"
-          active={isMicro}
-          collapsed={collapsed}
-          icon={
-            <Microscope size={18} strokeWidth={isMicro ? 2.2 : 1.8} className="shrink-0" />
-          }
-        >
-          Microbiología
-        </NavItem>
-
-        <NavItem
-          href="/dashboard/guias"
-          title="Gestión de Guías"
-          active={isGuias}
-          collapsed={collapsed}
-          icon={
-            <FolderOpen size={18} strokeWidth={isGuias ? 2.2 : 1.8} className="shrink-0" />
-          }
-        >
-          Gestión de Guías
-        </NavItem>
-
-        <NavItem
-          href="/dashboard/qualy-ai"
-          title="Qualy AI"
-          active={isQualy}
-          collapsed={collapsed}
-          icon={<QualyIcon size={18} className="shrink-0" />}
-        >
-          Qualy AI
-        </NavItem>
+      <nav className="flex-1 py-4 px-2.5 space-y-0.5 overflow-y-auto">
+        {isPortal && <PortalNav collapsed={collapsed} pathname={pathname} />}
+        {isMicro && <MicroNav collapsed={collapsed} pathname={pathname} />}
+        {isGuias && <GuiasNav collapsed={collapsed} pathname={pathname} />}
+        {isQualy && <QualyNav collapsed={collapsed} />}
       </nav>
 
       <div className="border-t border-slate-100 p-2.5 space-y-1">
-        <Link
-          href="/dashboard/configuraciones"
-          title="Configuraciones"
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors ${
-            collapsed ? "justify-center px-0" : ""
-          }`}
-        >
-          <Settings size={18} strokeWidth={1.8} className="shrink-0" />
-          {!collapsed && <span>Configuraciones</span>}
-        </Link>
+        {isPortal && (
+          <Link
+            href="/dashboard/configuraciones"
+            title="Configuraciones"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors ${
+              collapsed ? "justify-center px-0" : ""
+            }`}
+          >
+            <Settings size={18} strokeWidth={1.8} className="shrink-0" />
+            {!collapsed && <span>Configuraciones</span>}
+          </Link>
+        )}
 
         <div
           className={`flex items-center gap-3 px-3 py-2.5 ${
