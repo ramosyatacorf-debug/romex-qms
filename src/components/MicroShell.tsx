@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Home, Microscope, Thermometer, Bug, FileText } from "lucide-react";
+import { Home } from "lucide-react";
 
 const NAV = [
   { href: "/dashboard/microbiologia", label: "Inicio", exact: true },
@@ -11,6 +11,8 @@ const NAV = [
   { href: "/dashboard/microbiologia/ambientes", label: "Ambientes" },
   { href: "/dashboard/microbiologia/sshh", label: "SS.HH." },
   { href: "/dashboard/microbiologia/plagas", label: "Plagas" },
+  { href: "/dashboard/microbiologia/almacenes", label: "Almacenes" },
+  { href: "/dashboard/microbiologia/monitoreo", label: "Monitoreo" },
 ];
 
 export default function MicroShell({
@@ -46,7 +48,7 @@ export default function MicroShell({
                 <p className="text-[13px] font-semibold text-slate-800 truncate">
                   {title || "Microbiología"}
                 </p>
-                <p className="text-[11px] text-violet-600 font-medium">
+                <p className="text-[11px] text-violet-600 font-medium truncate">
                   {code || "Sistema de laboratorio"}
                 </p>
               </div>
