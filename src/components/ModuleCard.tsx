@@ -1,14 +1,13 @@
 import Link from "next/link";
-import { ArrowUpRight, Microscope, FlaskConical, FolderOpen } from "lucide-react";
+import { ArrowUpRight, Microscope, FlaskConical, FolderOpen, Sparkles } from "lucide-react";
 
 interface ModuleCardProps {
   number: string;
   title: string;
   description?: string;
   href?: string;
-  icon?: "microscope" | "flask" | "folder" | "empty";
+  icon?: "microscope" | "flask" | "folder" | "ai" | "empty";
   status?: "ready" | "soon";
-  /** Abre el sistema en una pestaña nueva (sistema independiente) */
   newWindow?: boolean;
 }
 
@@ -16,6 +15,7 @@ const icons = {
   microscope: Microscope,
   flask: FlaskConical,
   folder: FolderOpen,
+  ai: Sparkles,
   empty: null,
 };
 
@@ -23,22 +23,32 @@ const tone = {
   microscope: {
     iconBg: "bg-violet-50",
     iconColor: "text-violet-600",
-    hover: "hover:border-violet-200 hover:shadow-violet-50/50",
+    hover: "hover:border-violet-200 hover:shadow-violet-100/60",
+    accent: "group-hover:text-violet-700",
   },
   flask: {
     iconBg: "bg-sky-50",
     iconColor: "text-sky-600",
-    hover: "hover:border-sky-200 hover:shadow-sky-50/50",
+    hover: "hover:border-sky-200 hover:shadow-sky-100/60",
+    accent: "group-hover:text-sky-700",
   },
   folder: {
     iconBg: "bg-amber-50",
     iconColor: "text-amber-600",
-    hover: "hover:border-amber-200 hover:shadow-amber-50/50",
+    hover: "hover:border-amber-200 hover:shadow-amber-100/60",
+    accent: "group-hover:text-amber-700",
+  },
+  ai: {
+    iconBg: "bg-blue-50",
+    iconColor: "text-blue-600",
+    hover: "hover:border-blue-200 hover:shadow-blue-100/60",
+    accent: "group-hover:text-blue-700",
   },
   empty: {
     iconBg: "bg-slate-50",
     iconColor: "text-slate-300",
     hover: "",
+    accent: "",
   },
 };
 
@@ -58,15 +68,15 @@ export default function ModuleCard({
 
   const body = (
     <div
-      className={`group relative bg-white border border-slate-200 rounded-2xl p-5 transition-all duration-200 min-h-[152px] flex flex-col ${
+      className={`group relative bg-white border border-slate-200 rounded-2xl p-5 transition-all duration-200 min-h-[168px] flex flex-col ${
         isSoon
-          ? "opacity-60 pointer-events-none"
-          : `${t.hover} hover:shadow-md`
+          ? "opacity-55"
+          : `${t.hover} hover:shadow-md cursor-pointer`
       }`}
     >
       <div className="flex items-start justify-between gap-3 mb-4">
-        <p className="text-[11px] text-slate-400 font-medium tracking-wide uppercase">
-          {number}
+        <p className="text-[11px] text-slate-400 font-semibold tracking-wider uppercase">
+          Sistema {number}
         </p>
         {Icon && (
           <div
@@ -77,7 +87,7 @@ export default function ModuleCard({
         )}
       </div>
 
-      <h3 className="text-[15px] font-semibold text-slate-800 leading-snug mb-1.5">
+      <h3 className="text-[15.5px] font-semibold text-slate-900 leading-snug mb-1.5">
         {title || "Próximamente"}
       </h3>
 
@@ -89,9 +99,9 @@ export default function ModuleCard({
 
       <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
         {isSoon ? (
-          <span className="text-[12px] text-slate-400">En preparación</span>
+          <span className="text-[12px] text-slate-400 font-medium">En preparación</span>
         ) : (
-          <span className="text-[12.5px] font-medium text-slate-500 group-hover:text-slate-800 transition-colors">
+          <span className={`text-[12.5px] font-medium text-slate-500 transition-colors ${t.accent}`}>
             {newWindow ? "Abrir en nueva ventana" : "Abrir sistema"}
           </span>
         )}
@@ -109,11 +119,15 @@ export default function ModuleCard({
 
   if (newWindow) {
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer">
+      <a href={href} target="_blank" rel="noopener noreferrer" className="block">
         {body}
       </a>
     );
   }
 
-  return <Link href={href}>{body}</Link>;
+  return (
+    <Link href={href} className="block">
+      {body}
+    </Link>
+  );
 }
