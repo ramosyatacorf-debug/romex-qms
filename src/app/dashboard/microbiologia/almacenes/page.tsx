@@ -2,7 +2,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 import MicroShell from "@/components/MicroShell";
-import { ArrowLeft, Plus, Save, Trash2, Eye } from "lucide-react";
+import {
+  Field,
+  PageHeader,
+  EmptyState,
+  ListRow,
+  PrimaryButton,
+  GhostButton,
+  inputClass,
+} from "@/components/ui";
+import { ArrowLeft, Plus, Save, Warehouse } from "lucide-react";
 
 type RN = "R" | "NR" | "";
 
@@ -48,18 +57,6 @@ function fmt(iso: string) {
   return `${d}/${m}/${y}`;
 }
 
-const inputClass =
-  "w-full h-10 px-3 rounded-lg border border-slate-200 text-[13.5px] text-slate-800 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/10";
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className="block text-[12px] font-medium text-slate-600 mb-1">{label}</label>
-      {children}
-    </div>
-  );
-}
-
 function RNToggle({
   value,
   onChange,
@@ -72,23 +69,31 @@ function RNToggle({
   return (
     <div>
       <p className="text-[12px] font-medium text-slate-600 mb-1.5">{label}</p>
-      <div className="flex gap-1">
+      <div className="flex gap-1.5">
         <button
           type="button"
           onClick={() => onChange("R")}
-          className={`h-9 flex-1 rounded-lg text-[13px] font-semibold ${value === "R" ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-500"}`}
+          className={`h-10 flex-1 rounded-xl text-[13px] font-semibold transition-colors ${
+            value === "R"
+              ? "bg-emerald-500 text-white shadow-sm shadow-emerald-500/20"
+              : "bg-slate-100 text-slate-500 hover:bg-slate-150"
+          }`}
         >
           R
         </button>
         <button
           type="button"
           onClick={() => onChange("NR")}
-          className={`h-9 flex-1 rounded-lg text-[13px] font-semibold ${value === "NR" ? "bg-red-500 text-white" : "bg-slate-100 text-slate-500"}`}
+          className={`h-10 flex-1 rounded-xl text-[13px] font-semibold transition-colors ${
+            value === "NR"
+              ? "bg-red-500 text-white shadow-sm shadow-red-500/20"
+              : "bg-slate-100 text-slate-500 hover:bg-slate-150"
+          }`}
         >
           NR
         </button>
       </div>
-      <p className="text-[11px] text-slate-400 mt-1">R = Realizado · NR = No realizado</p>
+      <p className="text-[11px] text-slate-400 mt-1.5">R = Realizado · NR = No realizado</p>
     </div>
   );
 }
@@ -115,6 +120,17 @@ export default function AlmacenesPage() {
     [items]
   );
 
+  const resetForm = () => {
+    setFecha("");
+    setArea(AREAS[0]);
+    setLimpieza("R");
+    setDesinfeccion("");
+    setDesinfectante("");
+    setConcentracion("");
+    setObs("");
+    setResponsable("");
+  };
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     if (!fecha || !area) return;
@@ -136,11 +152,7 @@ export default function AlmacenesPage() {
       setItems(updated);
       save(updated);
       setMode("lista");
-      setFecha("");
-      setObs("");
-      setDesinfectante("");
-      setConcentracion("");
-      setDesinfeccion("");
+      resetForm();
     } finally {
       setSaving(false);
     }
@@ -151,54 +163,51 @@ export default function AlmacenesPage() {
     const updated = items.filter((x) => x.id !== id);
     setItems(updated);
     save(updated);
+    if (selected?.id === id) {
+      setSelected(null);
+      setMode("lista");
+    }
   };
 
   return (
     <MicroShell title="Limpieza de almacenes" code="A-LDAMP-R-017">
       {mode === "lista" && (
         <>
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-[22px] font-semibold text-slate-800 mb-1">Limpieza de almacenes</h1>
-              <p className="text-[13.5px] text-slate-500">
-                Control diario de limpieza y desinfección · R / NR
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setMode("nuevo")}
-              className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-[14px] font-medium"
-            >
-              <Plus size={16} /> Nuevo registro
-            </button>
-          </div>
+          <PageHeader
+            title="Limpieza de almacenes"
+            subtitle="Control diario de limpieza y desinfección · R / NR"
+            action={
+              <PrimaryButton onClick={() => { resetForm(); setMode("nuevo"); }}>
+                <Plus size={16} /> Nuevo registro
+              </PrimaryButton>
+            }
+          />
 
           {sorted.length === 0 ? (
-            <div className="text-center py-16 bg-white border border-dashed border-slate-200 rounded-2xl text-slate-500 text-[14px]">
-              Sin registros de limpieza aún
-            </div>
+            <EmptyState
+              icon={Warehouse}
+              title="Sin registros de limpieza"
+              description="Registra la limpieza y desinfección diaria de cada almacén."
+              action={
+                <PrimaryButton onClick={() => setMode("nuevo")} className="h-10 px-4 text-[13.5px]">
+                  <Plus size={15} /> Nuevo registro
+                </PrimaryButton>
+              }
+            />
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {sorted.map((r) => (
-                <div key={r.id} className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[14px] font-semibold text-slate-800">
-                      {fmt(r.fecha)} · {r.area}
-                    </p>
-                    <p className="text-[13px] text-slate-500">
-                      Limpieza: {r.limpieza || "—"}
-                      {r.desinfeccion ? ` · Desinfección: ${r.desinfeccion}` : ""}
-                      {r.desinfectante ? ` · ${r.desinfectante}` : ""}
-                      {r.concentracion ? ` ${r.concentracion}` : ""}
-                    </p>
-                  </div>
-                  <button type="button" onClick={() => { setSelected(r); setMode("ver"); }} className="p-2 rounded-lg hover:bg-violet-50 text-slate-400 hover:text-violet-600">
-                    <Eye size={16} />
-                  </button>
-                  <button type="button" onClick={() => handleDelete(r.id)} className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
+                <ListRow
+                  key={r.id}
+                  icon={Warehouse}
+                  title={`${fmt(r.fecha)} · ${r.area}`}
+                  subtitle={`Limpieza ${r.limpieza || "—"}${r.desinfeccion ? ` · Desinf. ${r.desinfeccion}` : ""}${r.desinfectante ? ` · ${r.desinfectante}` : ""}${r.concentracion ? ` ${r.concentracion}` : ""}`}
+                  onView={() => {
+                    setSelected(r);
+                    setMode("ver");
+                  }}
+                  onDelete={() => handleDelete(r.id)}
+                />
               ))}
             </div>
           )}
@@ -207,12 +216,16 @@ export default function AlmacenesPage() {
 
       {mode === "nuevo" && (
         <form onSubmit={handleSave} className="max-w-xl">
-          <button type="button" onClick={() => setMode("lista")} className="inline-flex items-center gap-2 text-[13.5px] text-slate-500 mb-6">
-            <ArrowLeft size={15} /> Volver
+          <button
+            type="button"
+            onClick={() => setMode("lista")}
+            className="inline-flex items-center gap-2 text-[13.5px] text-slate-500 hover:text-slate-800 mb-6"
+          >
+            <ArrowLeft size={15} /> Volver al listado
           </button>
-          <h1 className="text-[20px] font-semibold text-slate-800 mb-6">Nuevo registro diario</h1>
+          <h1 className="text-[20px] font-semibold text-slate-900 mb-6">Nuevo registro diario</h1>
 
-          <div className="space-y-4 mb-6">
+          <div className="space-y-4 mb-8 p-5 bg-white border border-slate-200 rounded-2xl">
             <Field label="Fecha">
               <input required type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className={inputClass} />
             </Field>
@@ -252,32 +265,80 @@ export default function AlmacenesPage() {
               />
             </Field>
             <Field label="Responsable">
-              <input value={responsable} onChange={(e) => setResponsable(e.target.value)} placeholder="Nombre" className={inputClass} />
+              <input
+                value={responsable}
+                onChange={(e) => setResponsable(e.target.value)}
+                placeholder="Nombre"
+                className={inputClass}
+              />
             </Field>
           </div>
 
           <div className="flex gap-3">
-            <button type="button" onClick={() => setMode("lista")} className="h-11 px-5 rounded-xl border border-slate-200 text-[14px] font-medium text-slate-600">Cancelar</button>
-            <button type="submit" disabled={saving} className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-violet-600 text-white text-[14px] font-medium disabled:opacity-60">
+            <GhostButton onClick={() => setMode("lista")}>Cancelar</GhostButton>
+            <PrimaryButton type="submit" disabled={saving}>
               <Save size={15} /> {saving ? "Guardando..." : "Guardar"}
-            </button>
+            </PrimaryButton>
           </div>
         </form>
       )}
 
       {mode === "ver" && selected && (
         <>
-          <button type="button" onClick={() => setMode("lista")} className="inline-flex items-center gap-2 text-[13.5px] text-slate-500 mb-6">
-            <ArrowLeft size={15} /> Volver
+          <button
+            type="button"
+            onClick={() => {
+              setSelected(null);
+              setMode("lista");
+            }}
+            className="inline-flex items-center gap-2 text-[13.5px] text-slate-500 hover:text-slate-800 mb-6"
+          >
+            <ArrowLeft size={15} /> Volver al listado
           </button>
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 text-[14px] space-y-3 max-w-lg">
-            <p><span className="text-slate-400">Fecha:</span> {fmt(selected.fecha)}</p>
-            <p><span className="text-slate-400">Área:</span> {selected.area}</p>
-            <p><span className="text-slate-400">Limpieza:</span> {selected.limpieza || "—"}</p>
-            <p><span className="text-slate-400">Desinfección:</span> {selected.desinfeccion || "—"}</p>
-            <p><span className="text-slate-400">Desinfectante:</span> {selected.desinfectante || "—"} {selected.concentracion}</p>
-            <p><span className="text-slate-400">Obs:</span> {selected.observaciones || "—"}</p>
-            <p><span className="text-slate-400">Responsable:</span> {selected.responsable}</p>
+          <div className="max-w-lg bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
+            <div>
+              <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wide mb-1">Fecha</p>
+              <p className="text-[15px] font-semibold text-slate-900">{fmt(selected.fecha)}</p>
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wide mb-1">Área</p>
+              <p className="text-[14px] text-slate-800">{selected.area}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wide mb-1">Limpieza</p>
+                <span className={`inline-flex h-7 px-2.5 items-center rounded-lg text-[13px] font-semibold ${
+                  selected.limpieza === "R" ? "bg-emerald-50 text-emerald-700" : selected.limpieza === "NR" ? "bg-red-50 text-red-600" : "bg-slate-50 text-slate-500"
+                }`}>
+                  {selected.limpieza || "—"}
+                </span>
+              </div>
+              <div>
+                <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wide mb-1">Desinfección</p>
+                <span className={`inline-flex h-7 px-2.5 items-center rounded-lg text-[13px] font-semibold ${
+                  selected.desinfeccion === "R" ? "bg-emerald-50 text-emerald-700" : selected.desinfeccion === "NR" ? "bg-red-50 text-red-600" : "bg-slate-50 text-slate-500"
+                }`}>
+                  {selected.desinfeccion || "—"}
+                </span>
+              </div>
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wide mb-1">Desinfectante</p>
+              <p className="text-[14px] text-slate-800">
+                {selected.desinfectante || "—"}
+                {selected.concentracion ? ` · ${selected.concentracion}` : ""}
+              </p>
+            </div>
+            {selected.observaciones && (
+              <div>
+                <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wide mb-1">Observaciones</p>
+                <p className="text-[14px] text-slate-700">{selected.observaciones}</p>
+              </div>
+            )}
+            <div>
+              <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wide mb-1">Responsable</p>
+              <p className="text-[14px] text-slate-800">{selected.responsable}</p>
+            </div>
           </div>
         </>
       )}

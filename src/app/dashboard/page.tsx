@@ -31,25 +31,26 @@ export default function DashboardPage() {
 
       <main className="flex-1 flex flex-col min-w-0">
         <div className="flex-1 px-6 py-8 md:px-10 md:py-10">
-          <header className="mb-10 max-w-3xl">
-            <p className="text-[12px] font-medium text-slate-400 tracking-wide uppercase mb-2">
+          <header className="mb-9 max-w-3xl">
+            <p className="text-[11px] font-semibold text-slate-400 tracking-wider uppercase mb-2">
               Portal del ecosistema
             </p>
-            <h1 className="text-[26px] sm:text-[28px] font-semibold text-slate-900 tracking-tight mb-2">
+            <h1 className="text-[26px] sm:text-[28px] font-semibold text-slate-900 tracking-tight mb-1.5">
               {saludo}, Rodrigo
             </h1>
-            <p className="text-slate-500 text-[14.5px] leading-relaxed capitalize">
-              {fecha}
-            </p>
+            <p className="text-slate-500 text-[14px] leading-relaxed capitalize">{fecha}</p>
             <p className="text-slate-500 text-[14px] leading-relaxed mt-3 max-w-xl">
-              Cada módulo es un sistema independiente. Inicia sesión una vez y entra a Microbiología, Guías u otros sin volver a autenticarte.
+              Elige un sistema. Cada uno se abre de forma independiente con su propia interfaz.
             </p>
           </header>
 
-          <section className="mb-3">
-            <h2 className="text-[13px] font-semibold text-slate-500 uppercase tracking-wide mb-4">
-              Sistemas disponibles
-            </h2>
+          <section>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h2 className="text-[12px] font-semibold text-slate-400 uppercase tracking-wider">
+                Sistemas
+              </h2>
+              <span className="text-[12px] text-slate-400">3 activos · 1 en preparación</span>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 max-w-5xl">
               <ModuleCard
                 number="01"
