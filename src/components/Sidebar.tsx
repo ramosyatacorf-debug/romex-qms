@@ -15,6 +15,8 @@ import {
   Thermometer,
   Bug,
   FileText,
+  Warehouse,
+  Activity,
 } from "lucide-react";
 import QualyIcon from "@/components/QualyIcon";
 
@@ -113,7 +115,7 @@ function PortalNav({ collapsed, pathname }: { collapsed: boolean; pathname: stri
 
       <NavLink
         href="/dashboard/qualy-ai"
-        active={false}
+        active={pathname.startsWith("/dashboard/qualy-ai")}
         collapsed={collapsed}
         icon={<QualyIcon size={18} className="shrink-0" />}
       >
@@ -138,7 +140,7 @@ function MicroNav({ collapsed, pathname }: { collapsed: boolean; pathname: strin
     },
     {
       href: "/dashboard/microbiologia/ambientes",
-      label: "Control de ambientes",
+      label: "Ambientes",
       icon: <Thermometer size={17} className="shrink-0" />,
     },
     {
@@ -150,6 +152,16 @@ function MicroNav({ collapsed, pathname }: { collapsed: boolean; pathname: strin
       href: "/dashboard/microbiologia/plagas",
       label: "Plagas",
       icon: <Bug size={17} className="shrink-0" />,
+    },
+    {
+      href: "/dashboard/microbiologia/almacenes",
+      label: "Almacenes",
+      icon: <Warehouse size={17} className="shrink-0" />,
+    },
+    {
+      href: "/dashboard/microbiologia/monitoreo",
+      label: "Monitoreo",
+      icon: <Activity size={17} className="shrink-0" />,
     },
   ];
 
@@ -242,7 +254,6 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
 
-  // Hub de micro y guías tienen UI propia; el sidebar solo aplica a sub-registros y Qualy
   const isMicroSub =
     pathname.startsWith("/dashboard/microbiologia/") &&
     pathname !== "/dashboard/microbiologia";
@@ -251,11 +262,11 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`h-screen bg-white border-r border-slate-200 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
+      className={`h-screen sticky top-0 bg-white border-r border-slate-200 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
         collapsed ? "w-[72px]" : "w-[260px]"
       }`}
     >
-      <div className="h-[76px] flex items-center gap-2 px-3 border-b border-slate-100">
+      <div className="h-[72px] flex items-center gap-2 px-3 border-b border-slate-100">
         {!collapsed && (
           <Link href="/dashboard" className="flex-1 flex items-center min-w-0 py-1">
             <Image
@@ -263,7 +274,7 @@ export default function Sidebar({
               alt="RomEx Quality Management System"
               width={160}
               height={44}
-              className="object-contain object-left w-full max-h-11"
+              className="object-contain object-left w-full max-h-10"
               style={{ mixBlendMode: "multiply" }}
               priority
             />
@@ -271,6 +282,7 @@ export default function Sidebar({
         )}
 
         <button
+          type="button"
           onClick={onToggle}
           className={`p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors shrink-0 ${
             collapsed ? "mx-auto" : ""
@@ -290,7 +302,7 @@ export default function Sidebar({
       <div className="border-t border-slate-100 p-2.5 space-y-1">
         {isPortal && (
           <Link
-            href="/dashboard/configuraciones"
+            href="/dashboard"
             title="Configuraciones"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors ${
               collapsed ? "justify-center px-0" : ""
