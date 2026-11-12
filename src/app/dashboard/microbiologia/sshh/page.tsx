@@ -2,7 +2,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 import MicroShell from "@/components/MicroShell";
-import { ArrowLeft, Plus, Save, Trash2, Eye } from "lucide-react";
+import {
+  Field,
+  PageHeader,
+  EmptyState,
+  ListRow,
+  PrimaryButton,
+  GhostButton,
+  inputClass,
+} from "@/components/ui";
+import { ArrowLeft, Plus, Save, Bath } from "lucide-react";
 
 type Estado = "C" | "N" | "";
 
@@ -64,18 +73,6 @@ function fmt(iso: string) {
 
 function makeItems(labels: string[]): ItemCheck[] {
   return labels.map((label, i) => ({ id: String(i), label, estado: "C" as Estado }));
-}
-
-const inputClass =
-  "w-full h-10 px-3 rounded-lg border border-slate-200 text-[13.5px] text-slate-800 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/10";
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className="block text-[12px] font-medium text-slate-600 mb-1">{label}</label>
-      {children}
-    </div>
-  );
 }
 
 export default function SshhPage() {
@@ -145,48 +142,43 @@ export default function SshhPage() {
     <MicroShell title="Inspección SS.HH." code="LM-IP-R-003">
       {mode === "lista" && (
         <>
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-[22px] font-semibold text-slate-800 mb-1">Inspección SS.HH.</h1>
-              <p className="text-[13.5px] text-slate-500">
-                Limpieza y desinfección · 1 vez al día · C = Conforme · N = No conforme
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setMode("nuevo")}
-              className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-[14px] font-medium"
-            >
-              <Plus size={16} /> Nueva inspección
-            </button>
-          </div>
+          <PageHeader
+            title="Inspección SS.HH."
+            subtitle="Limpieza y desinfección · 1 vez al día · C = Conforme · N = No conforme"
+            action={
+              <PrimaryButton onClick={() => setMode("nuevo")}>
+                <Plus size={16} /> Nueva inspección
+              </PrimaryButton>
+            }
+          />
 
           {sorted.length === 0 ? (
-            <div className="text-center py-16 bg-white border border-dashed border-slate-200 rounded-2xl text-slate-500 text-[14px]">
-              Sin inspecciones aún
-            </div>
+            <EmptyState
+              icon={Bath}
+              title="Sin inspecciones aún"
+              description="Registra la inspección diaria de SS.HH. de varones o damas."
+              action={
+                <PrimaryButton onClick={() => setMode("nuevo")} className="h-10 px-4 text-[13.5px]">
+                  <Plus size={15} /> Nueva inspección
+                </PrimaryButton>
+              }
+            />
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {sorted.map((r) => {
                 const nc = r.items.filter((i) => i.estado === "N").length;
                 return (
-                  <div key={r.id} className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[14px] font-semibold text-slate-800">
-                        {fmt(r.fecha)} · {r.hora} · {r.tipo === "varones" ? "Varones" : "Damas"}
-                      </p>
-                      <p className="text-[13px] text-slate-500">
-                        {r.inspector}
-                        {nc > 0 ? ` · ${nc} no conforme(s)` : " · Todo conforme"}
-                      </p>
-                    </div>
-                    <button type="button" onClick={() => { setSelected(r); setMode("ver"); }} className="p-2 rounded-lg hover:bg-violet-50 text-slate-400 hover:text-violet-600">
-                      <Eye size={16} />
-                    </button>
-                    <button type="button" onClick={() => handleDelete(r.id)} className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500">
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
+                  <ListRow
+                    key={r.id}
+                    icon={Bath}
+                    title={`${fmt(r.fecha)} · ${r.hora} · ${r.tipo === "varones" ? "Varones" : "Damas"}`}
+                    subtitle={`${r.inspector}${nc > 0 ? ` · ${nc} no conforme(s)` : " · Todo conforme"}`}
+                    onView={() => {
+                      setSelected(r);
+                      setMode("ver");
+                    }}
+                    onDelete={() => handleDelete(r.id)}
+                  />
                 );
               })}
             </div>
@@ -196,71 +188,131 @@ export default function SshhPage() {
 
       {mode === "nuevo" && (
         <form onSubmit={handleSave}>
-          <button type="button" onClick={() => setMode("lista")} className="inline-flex items-center gap-2 text-[13.5px] text-slate-500 mb-6">
-            <ArrowLeft size={15} /> Volver
+          <button
+            type="button"
+            onClick={() => setMode("lista")}
+            className="inline-flex items-center gap-2 text-[13.5px] text-slate-500 hover:text-slate-800 mb-6"
+          >
+            <ArrowLeft size={15} /> Volver al listado
           </button>
-          <h1 className="text-[20px] font-semibold text-slate-800 mb-6">Nueva inspección</h1>
+          <h1 className="text-[20px] font-semibold text-slate-900 mb-6">Nueva inspección</h1>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <Field label="Fecha"><input required type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className={inputClass} /></Field>
-            <Field label="Hora"><input type="time" value={hora} onChange={(e) => setHora(e.target.value)} className={inputClass} /></Field>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 p-5 bg-white border border-slate-200 rounded-2xl">
+            <Field label="Fecha">
+              <input required type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className={inputClass} />
+            </Field>
+            <Field label="Hora">
+              <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} className={inputClass} />
+            </Field>
             <Field label="SS.HH.">
               <select value={tipo} onChange={(e) => setTipo(e.target.value as "varones" | "damas")} className={inputClass}>
                 <option value="varones">Varones</option>
                 <option value="damas">Damas</option>
               </select>
             </Field>
-            <Field label="Personal de limpieza"><input value={personal} onChange={(e) => setPersonal(e.target.value)} placeholder="José / Luzmila" className={inputClass} /></Field>
-            <Field label="Inspector"><input value={inspector} onChange={(e) => setInspector(e.target.value)} placeholder="Nereyda" className={inputClass} /></Field>
+            <Field label="Personal de limpieza">
+              <input value={personal} onChange={(e) => setPersonal(e.target.value)} placeholder="José / Luzmila" className={inputClass} />
+            </Field>
+            <Field label="Inspector">
+              <input value={inspector} onChange={(e) => setInspector(e.target.value)} placeholder="Nereyda" className={inputClass} />
+            </Field>
           </div>
 
-          <p className="text-[13px] font-medium text-slate-500 mb-3 mt-2">Checklist (C = Conforme · N = No conforme)</p>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <p className="text-[12px] font-semibold text-slate-400 uppercase tracking-wider">Checklist</p>
+            <p className="text-[12px] text-slate-400">C = Conforme · N = No conforme</p>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
             {checks.map((c) => (
-              <div key={c.id} className="flex items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-3 py-2.5">
+              <div
+                key={c.id}
+                className={`flex items-center justify-between gap-3 bg-white border rounded-xl px-3 py-2.5 transition-colors ${
+                  c.estado === "N" ? "border-red-200" : "border-slate-200"
+                }`}
+              >
                 <span className="text-[13.5px] text-slate-700">{c.label}</span>
-                <div className="flex gap-1">
-                  <button type="button" onClick={() => setEstado(c.id, "C")} className={`h-8 w-9 rounded-lg text-[12px] font-semibold ${c.estado === "C" ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-500"}`}>C</button>
-                  <button type="button" onClick={() => setEstado(c.id, "N")} className={`h-8 w-9 rounded-lg text-[12px] font-semibold ${c.estado === "N" ? "bg-red-500 text-white" : "bg-slate-100 text-slate-500"}`}>N</button>
+                <div className="flex gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setEstado(c.id, "C")}
+                    className={`h-8 w-9 rounded-lg text-[12px] font-semibold transition-colors ${
+                      c.estado === "C" ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    C
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEstado(c.id, "N")}
+                    className={`h-8 w-9 rounded-lg text-[12px] font-semibold transition-colors ${
+                      c.estado === "N" ? "bg-red-500 text-white" : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    N
+                  </button>
                 </div>
               </div>
             ))}
           </div>
 
-          <Field label="Observaciones / acción correctiva">
-            <input value={obs} onChange={(e) => setObs(e.target.value)} placeholder="Pisos con licor, papelera sin bolsas..." className={inputClass + " mb-6"} />
-          </Field>
+          <div className="mb-6">
+            <Field label="Observaciones / acción correctiva">
+              <input
+                value={obs}
+                onChange={(e) => setObs(e.target.value)}
+                placeholder="Pisos con licor, papelera sin bolsas..."
+                className={inputClass}
+              />
+            </Field>
+          </div>
 
           <div className="flex gap-3">
-            <button type="button" onClick={() => setMode("lista")} className="h-11 px-5 rounded-xl border border-slate-200 text-[14px] font-medium text-slate-600">Cancelar</button>
-            <button type="submit" disabled={saving} className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-violet-600 text-white text-[14px] font-medium disabled:opacity-60">
+            <GhostButton onClick={() => setMode("lista")}>Cancelar</GhostButton>
+            <PrimaryButton type="submit" disabled={saving}>
               <Save size={15} /> {saving ? "Guardando..." : "Guardar"}
-            </button>
+            </PrimaryButton>
           </div>
         </form>
       )}
 
       {mode === "ver" && selected && (
         <>
-          <button type="button" onClick={() => setMode("lista")} className="inline-flex items-center gap-2 text-[13.5px] text-slate-500 mb-6">
-            <ArrowLeft size={15} /> Volver
+          <button
+            type="button"
+            onClick={() => setMode("lista")}
+            className="inline-flex items-center gap-2 text-[13.5px] text-slate-500 hover:text-slate-800 mb-6"
+          >
+            <ArrowLeft size={15} /> Volver al listado
           </button>
-          <h1 className="text-[20px] font-semibold text-slate-800 mb-1">
-            {fmt(selected.fecha)} · {selected.tipo === "varones" ? "Varones" : "Damas"}
-          </h1>
-          <p className="text-[13.5px] text-slate-500 mb-6">
-            {selected.hora} · Limpieza: {selected.personalLimpieza} · Inspector: {selected.inspector}
-          </p>
+          <div className="mb-6">
+            <h1 className="text-[20px] font-semibold text-slate-900">
+              {fmt(selected.fecha)} · {selected.tipo === "varones" ? "Varones" : "Damas"}
+            </h1>
+            <p className="text-[13.5px] text-slate-500 mt-1">
+              {selected.hora} · Limpieza: {selected.personalLimpieza} · Inspector: {selected.inspector}
+            </p>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
             {selected.items.map((c) => (
-              <div key={c.id} className="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-[13.5px]">
+              <div
+                key={c.id}
+                className="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-[13.5px]"
+              >
                 <span className="text-slate-700">{c.label}</span>
-                <span className={`font-semibold ${c.estado === "N" ? "text-red-600" : "text-emerald-600"}`}>{c.estado || "—"}</span>
+                <span
+                  className={`inline-flex h-6 min-w-[28px] items-center justify-center rounded-md text-[12px] font-semibold ${
+                    c.estado === "N" ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-700"
+                  }`}
+                >
+                  {c.estado || "—"}
+                </span>
               </div>
             ))}
           </div>
           {selected.observaciones && (
-            <p className="text-[13.5px] text-slate-600 bg-white border border-slate-200 rounded-xl p-4">{selected.observaciones}</p>
+            <p className="text-[13.5px] text-slate-600 bg-white border border-slate-200 rounded-xl p-4">
+              {selected.observaciones}
+            </p>
           )}
         </>
       )}
