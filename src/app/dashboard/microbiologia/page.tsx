@@ -1,343 +1,334 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
-  Microscope,
+  Home,
+  LayoutGrid,
+  Settings,
+  BarChart3,
+  Info,
+  LogOut,
+  ArrowRight,
   Bug,
   Thermometer,
+  Users,
+  Brush,
+  Monitor,
+  ShieldCheck,
+  Wheat,
+  Microscope,
   FlaskConical,
-  ClipboardList,
+  ChevronDown,
   CalendarDays,
-  Shirt,
-  Home,
-  ArrowUpRight,
-  CheckCircle2,
+  Clock,
 } from "lucide-react";
 
-type Freq = "Diario" | "Semanal" | "Mensual" | "Por evento";
-
-interface Registro {
-  code: string;
+interface Modulo {
+  id: number;
   title: string;
   description: string;
-  freq: Freq;
   href: string;
-  ready?: boolean;
-}
-
-interface Grupo {
-  id: string;
-  title: string;
-  subtitle: string;
+  ready: boolean;
   icon: React.ReactNode;
-  items: Registro[];
+  iconBg: string;
+  iconColor: string;
+  arrowBg: string;
 }
 
-const GRUPOS: Grupo[] = [
+const MODULOS: Modulo[] = [
   {
-    id: "producto",
-    title: "Análisis de producto",
-    subtitle: "Liberación microbiológica de lotes",
-    icon: <Microscope size={17} strokeWidth={1.7} />,
-    items: [
-      {
-        code: "MICRO-PROD",
-        title: "Microbiología de producto",
-        description: "Torta, manteca, cocoa · RTAW, mohos, coliformes, E. coli",
-        freq: "Diario",
-        href: "/dashboard/microbiologia/producto",
-        ready: false,
-      },
-      {
-        code: "LM-RAE-004",
-        title: "Enterobacterias",
-        description: "Barreduras y residuos en planta · UFC/g por punto",
-        freq: "Mensual",
-        href: "/dashboard/microbiologia/enterobacterias",
-        ready: true,
-      },
-    ],
+    id: 1,
+    title: "Enterobacterias",
+    description: "Registro y control de Enterobacterias",
+    href: "/dashboard/microbiologia/enterobacterias",
+    ready: true,
+    icon: <Bug size={26} strokeWidth={1.6} />,
+    iconBg: "bg-sky-100",
+    iconColor: "text-sky-500",
+    arrowBg: "bg-sky-500",
   },
   {
-    id: "ambiente",
-    title: "Ambiente e higiene",
-    subtitle: "Condiciones y limpieza de áreas",
-    icon: <Thermometer size={17} strokeWidth={1.7} />,
-    items: [
-      {
-        code: "LM-IP-020",
-        title: "Control de ambientes",
-        description: "Temperatura y humedad relativa por área",
-        freq: "Diario",
-        href: "/dashboard/microbiologia/ambientes",
-        ready: true,
-      },
-      {
-        code: "A-LDAMP-R-017",
-        title: "Limpieza de almacenes",
-        description: "Limpieza y desinfección R/NR · desinfectante y ppm",
-        freq: "Diario",
-        href: "/dashboard/microbiologia/almacenes",
-        ready: true,
-      },
-      {
-        code: "LM-IP-R-003",
-        title: "SS.HH. varones y damas",
-        description: "Inspección de servicios higiénicos",
-        freq: "Diario",
-        href: "/dashboard/microbiologia/sshh",
-        ready: true,
-      },
-      {
-        code: "LM-MM",
-        title: "Monitoreo ambiental",
-        description: "Placas por área · RTAMV, mohos y levaduras",
-        freq: "Mensual",
-        href: "/dashboard/microbiologia/monitoreo",
-        ready: true,
-      },
-    ],
+    id: 2,
+    title: "Control de Ambiente",
+    description: "Monitoreo y control del ambiente",
+    href: "/dashboard/microbiologia/ambientes",
+    ready: true,
+    icon: <Thermometer size={26} strokeWidth={1.6} />,
+    iconBg: "bg-emerald-100",
+    iconColor: "text-emerald-500",
+    arrowBg: "bg-emerald-500",
   },
   {
-    id: "plagas",
-    title: "Control de plagas",
-    subtitle: "Monitoreo de roedores y aves",
-    icon: <Bug size={17} strokeWidth={1.7} />,
-    items: [
-      {
-        code: "LM-CP-R-004",
-        title: "Población de roedores y aves",
-        description: "Avistamientos, umbrales y acciones correctivas",
-        freq: "Por evento",
-        href: "/dashboard/microbiologia/plagas",
-        ready: true,
-      },
-      {
-        code: "LM-CP-R-010",
-        title: "Resumen mensual de plagas",
-        description: "Observaciones del mes y eficacia",
-        freq: "Mensual",
-        href: "/dashboard/microbiologia/plagas-resumen",
-        ready: false,
-      },
-    ],
+    id: 3,
+    title: "SS.HH.",
+    description: "Control sanitario de SS.HH.",
+    href: "/dashboard/microbiologia/sshh",
+    ready: true,
+    icon: <Users size={26} strokeWidth={1.6} />,
+    iconBg: "bg-violet-100",
+    iconColor: "text-violet-500",
+    arrowBg: "bg-violet-500",
   },
   {
-    id: "lab",
-    title: "Laboratorio",
-    subtitle: "Medios de cultivo y controles internos",
-    icon: <FlaskConical size={17} strokeWidth={1.7} />,
-    items: [
-      {
-        code: "LM-PAC-L-010",
-        title: "Consumo de medios de cultivo",
-        description: "Ingreso, lote y uso de plate count",
-        freq: "Diario",
-        href: "/dashboard/microbiologia/medios",
-        ready: false,
-      },
-      {
-        code: "LM-PAC-R-003",
-        title: "Control de pH de medios",
-        description: "pHi, ajuste y pHf de agar plate count",
-        freq: "Diario",
-        href: "/dashboard/microbiologia/ph-medios",
-        ready: false,
-      },
-    ],
+    id: 4,
+    title: "Plagas",
+    description: "Control y monitoreo de plagas",
+    href: "/dashboard/microbiologia/plagas",
+    ready: true,
+    icon: <Bug size={26} strokeWidth={1.6} />,
+    iconBg: "bg-orange-100",
+    iconColor: "text-orange-500",
+    arrowBg: "bg-orange-500",
   },
   {
-    id: "extra",
-    title: "Monitoreo adicional",
-    subtitle: "Ropa de trabajo y cloración",
-    icon: <Shirt size={17} strokeWidth={1.7} />,
-    items: [
-      {
-        code: "LM-MM-R-17",
-        title: "Lavado de ropa de trabajo",
-        description: "RTAMV, S. aureus y coliformes en prendas",
-        freq: "Mensual",
-        href: "/dashboard/microbiologia/ropa",
-        ready: false,
-      },
-      {
-        code: "LM-CLOR-R-098",
-        title: "Cloración de poza y shiler",
-        description: "Registro diario de dosis de cloro",
-        freq: "Diario",
-        href: "/dashboard/microbiologia/cloracion",
-        ready: false,
-      },
-    ],
+    id: 5,
+    title: "Registro de Limpieza de Almacenes",
+    description: "Control de limpieza de almacenes",
+    href: "/dashboard/microbiologia/almacenes",
+    ready: true,
+    icon: <Brush size={26} strokeWidth={1.6} />,
+    iconBg: "bg-teal-100",
+    iconColor: "text-teal-500",
+    arrowBg: "bg-teal-500",
+  },
+  {
+    id: 6,
+    title: "Monitoreo",
+    description: "Seguimiento y control de monitoreos",
+    href: "/dashboard/microbiologia/monitoreo",
+    ready: true,
+    icon: <Monitor size={26} strokeWidth={1.6} />,
+    iconBg: "bg-cyan-100",
+    iconColor: "text-cyan-600",
+    arrowBg: "bg-cyan-500",
+  },
+  {
+    id: 7,
+    title: "PAC",
+    description: "Control de Puntos Críticos (PAC)",
+    href: "/dashboard/microbiologia/pac",
+    ready: false,
+    icon: <ShieldCheck size={26} strokeWidth={1.6} />,
+    iconBg: "bg-indigo-100",
+    iconColor: "text-indigo-500",
+    arrowBg: "bg-indigo-500",
+  },
+  {
+    id: 8,
+    title: "Grano 2026",
+    description: "Control de calidad de grano",
+    href: "/dashboard/microbiologia/grano",
+    ready: false,
+    icon: <Wheat size={26} strokeWidth={1.6} />,
+    iconBg: "bg-amber-100",
+    iconColor: "text-amber-500",
+    arrowBg: "bg-amber-500",
+  },
+  {
+    id: 9,
+    title: "Microbiología 2026",
+    description: "Análisis microbiológico del año 2026",
+    href: "/dashboard/microbiologia/anio-2026",
+    ready: false,
+    icon: <Microscope size={26} strokeWidth={1.6} />,
+    iconBg: "bg-blue-100",
+    iconColor: "text-blue-500",
+    arrowBg: "bg-blue-500",
   },
 ];
 
-const FREQ_STYLE: Record<Freq, string> = {
-  Diario: "bg-emerald-50 text-emerald-700",
-  Semanal: "bg-sky-50 text-sky-700",
-  Mensual: "bg-violet-50 text-violet-700",
-  "Por evento": "bg-amber-50 text-amber-700",
-};
+function useClock() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  return now;
+}
 
 export default function MicrobiologiaHubPage() {
-  const todos = GRUPOS.flatMap((g) => g.items);
-  const listos = todos.filter((i) => i.ready);
-  const pendientes = todos.length - listos.length;
+  const now = useClock();
+  const fecha = now.toLocaleDateString("es-PE", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+  const hora = now.toLocaleTimeString("es-PE", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
 
   return (
-    <div className="min-h-screen bg-[#f7f8fb] flex flex-col">
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/70">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-[56px] flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <Link href="/dashboard" className="shrink-0 flex items-center">
-              <Image
-                src="/logo_romex.jpg"
-                alt="RomEx"
-                width={112}
-                height={32}
-                className="object-contain h-7 w-auto max-w-[110px]"
-                style={{ mixBlendMode: "multiply" }}
-                priority
-              />
-            </Link>
-            <div className="hidden sm:block h-4 w-px bg-slate-200" />
-            <div className="min-w-0">
-              <p className="text-[13px] font-semibold text-slate-900 leading-none">Microbiología</p>
-              <p className="text-[11px] text-violet-600/90 font-medium leading-none mt-1">Sistema de laboratorio</p>
+    <div className="min-h-screen flex bg-[#eef3fb]">
+      {/* Sidebar */}
+      <aside className="hidden md:flex w-[232px] shrink-0 flex-col bg-white border-r border-slate-200/80">
+        <div className="px-5 pt-6 pb-5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/25">
+              <FlaskConical size={22} strokeWidth={1.8} />
+            </div>
+            <div>
+              <p className="text-[16px] font-bold text-slate-800 tracking-tight leading-none">ZORKA</p>
+              <p className="text-[10px] text-slate-400 mt-1 leading-tight">Calidad que nos inspira</p>
             </div>
           </div>
-
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-[12.5px] font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors"
-            title="Volver al portal QMS"
-          >
-            <Home size={14} />
-            <span className="hidden sm:inline">Portal</span>
-          </Link>
         </div>
-      </header>
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-9">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-[22px] sm:text-[23px] font-semibold text-slate-900 tracking-tight">
-              Registros del laboratorio
+        <nav className="flex-1 px-3 space-y-0.5">
+          <SideItem href="/dashboard/microbiologia" icon={<Home size={17} />} label="Inicio" active />
+          <SideItem href="/dashboard/microbiologia" icon={<LayoutGrid size={17} />} label="Módulos" chevron />
+          <SideItem href="#" icon={<Settings size={17} />} label="Configuración" />
+          <SideItem href="#" icon={<BarChart3 size={17} />} label="Reportes" />
+          <SideItem href="#" icon={<Info size={17} />} label="Acerca de" />
+          <div className="pt-2">
+            <SideItem href="/dashboard" icon={<LogOut size={17} />} label="Salir" />
+          </div>
+        </nav>
+
+        <div className="px-4 py-4 border-t border-slate-100">
+          <div className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-50 cursor-pointer">
+            <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[12px] font-semibold">
+              A
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[12.5px] font-medium text-slate-700 truncate">Usuario</p>
+              <p className="text-[11px] text-slate-400">Administrador</p>
+            </div>
+            <ChevronDown size={14} className="text-slate-400" />
+          </div>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top bar */}
+        <header className="h-[64px] bg-white/80 backdrop-blur border-b border-slate-200/70 px-5 sm:px-8 flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[12px] text-slate-400 font-medium">Sistema de Microbiología</p>
+            <h1 className="text-[22px] sm:text-[24px] font-bold text-[#1e3a8a] tracking-tight leading-none">
+              ZORKA
             </h1>
-            <p className="text-slate-500 text-[13.5px] mt-1.5 max-w-lg leading-relaxed">
-              Formatos diarios y periódicos alineados a los procedimientos de planta.
-            </p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg bg-white border border-slate-200/90 text-[12px] text-slate-600">
-              <CheckCircle2 size={13} className="text-emerald-500" />
-              <span className="font-medium text-slate-800">{listos.length}</span> activos
-            </div>
-            <div className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg bg-white border border-slate-200/90 text-[12px] text-slate-500">
-              {pendientes} próximos
-            </div>
-          </div>
-        </div>
 
-        {listos.length > 0 && (
-          <section className="mb-9">
-            <p className="text-[10.5px] font-semibold text-slate-400 uppercase tracking-[0.06em] mb-2.5">
-              Acceso rápido
+          <div className="hidden lg:flex items-center gap-5 text-[12.5px] text-slate-500">
+            <span className="text-slate-400">Control, análisis y calidad en cada proceso</span>
+            <span className="h-4 w-px bg-slate-200" />
+            <span className="inline-flex items-center gap-1.5">
+              <CalendarDays size={14} className="text-slate-400" />
+              {fecha}
+            </span>
+            <span className="inline-flex items-center gap-1.5 tabular-nums">
+              <Clock size={14} className="text-slate-400" />
+              {hora}
+            </span>
+            <div className="w-8 h-8 rounded-full bg-slate-200 border border-white shadow-sm" />
+          </div>
+        </header>
+
+        <main className="flex-1 px-5 sm:px-8 py-7 sm:py-8 relative overflow-hidden">
+          {/* decorative bg */}
+          <div className="pointer-events-none absolute right-0 top-0 w-[420px] h-[420px] opacity-[0.12]">
+            <div className="absolute right-10 top-8 w-40 h-40 rounded-full border-2 border-sky-400" />
+            <div className="absolute right-28 top-24 w-24 h-24 rounded-full border border-sky-300" />
+          </div>
+
+          <div className="relative max-w-5xl">
+            <h2 className="text-[22px] sm:text-[26px] font-bold text-[#1e3a8a] tracking-tight mb-1.5">
+              Bienvenido al Sistema de Microbiología ZORKA
+            </h2>
+            <p className="text-[14px] text-slate-500 mb-8">
+              Seleccione el módulo que desea gestionar:
             </p>
-            <div className="flex flex-wrap gap-1.5">
-              {listos.map((item) => (
-                <Link
-                  key={item.code}
-                  href={item.href}
-                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-white border border-slate-200/90 text-[12.5px] font-medium text-slate-700 hover:border-violet-300 hover:text-violet-700 hover:bg-violet-50/50 transition-colors"
-                >
-                  {item.title}
-                  <ArrowUpRight size={12} className="text-slate-300" />
-                </Link>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {MODULOS.map((m) => (
+                <ModuloCard key={m.id} modulo={m} />
               ))}
             </div>
-          </section>
-        )}
+          </div>
+        </main>
 
-        <div className="space-y-10">
-          {GRUPOS.map((grupo) => (
-            <section key={grupo.id}>
-              <div className="flex items-center gap-2.5 mb-3.5">
-                <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
-                  {grupo.icon}
-                </div>
-                <div className="min-w-0">
-                  <h2 className="text-[14px] font-semibold text-slate-900 tracking-tight">{grupo.title}</h2>
-                  <p className="text-[12px] text-slate-500">{grupo.subtitle}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                {grupo.items.map((item) => (
-                  <RegistroCard key={item.code} item={item} />
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      </main>
-
-      <footer className="py-3 text-center text-[11px] text-slate-400/90 border-t border-slate-100">
-        Exportadora RomEx S.A. — Microbiología
-      </footer>
+        <footer className="px-5 sm:px-8 py-3 flex items-center justify-between text-[11.5px] text-slate-400 border-t border-slate-200/60 bg-white/50">
+          <span>Sistema de Microbiología ZORKA v1.0</span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Sistema en línea
+          </span>
+        </footer>
+      </div>
     </div>
   );
 }
 
-function RegistroCard({ item }: { item: Registro }) {
-  const content = (
-    <div
-      className={`group relative flex flex-col gap-2.5 p-4 rounded-xl border bg-white transition-all duration-200 ${
-        item.ready
-          ? "border-slate-200/90 hover:border-violet-200 hover:shadow-[0_4px_16px_rgba(124,58,237,0.06)] cursor-pointer"
-          : "border-slate-100 opacity-55"
+function SideItem({
+  href,
+  icon,
+  label,
+  active,
+  chevron,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  active?: boolean;
+  chevron?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`flex items-center gap-2.5 h-10 px-3 rounded-xl text-[13px] font-medium transition-colors ${
+        active
+          ? "bg-sky-50 text-sky-700"
+          : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[10.5px] font-medium text-slate-400 tracking-wide mb-0.5">{item.code}</p>
-          <h3 className="text-[14px] font-semibold text-slate-900 leading-snug tracking-tight">{item.title}</h3>
-        </div>
-        <span
-          className={`shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10.5px] font-medium ${FREQ_STYLE[item.freq]}`}
+      <span className={active ? "text-sky-600" : "text-slate-400"}>{icon}</span>
+      <span className="flex-1">{label}</span>
+      {chevron && <ChevronDown size={14} className="text-slate-300" />}
+    </Link>
+  );
+}
+
+function ModuloCard({ modulo }: { modulo: Modulo }) {
+  const body = (
+    <div
+      className={`group relative bg-white rounded-2xl border border-slate-100 p-5 min-h-[118px] transition-all duration-200 ${
+        modulo.ready
+          ? "hover:shadow-[0_8px_30px_rgba(30,58,138,0.08)] hover:border-slate-200 cursor-pointer"
+          : "opacity-55"
+      }`}
+    >
+      <div className="flex items-start gap-4">
+        <div
+          className={`w-14 h-14 rounded-2xl ${modulo.iconBg} ${modulo.iconColor} flex items-center justify-center shrink-0`}
         >
-          <CalendarDays size={10} />
-          {item.freq}
-        </span>
+          {modulo.icon}
+        </div>
+        <div className="min-w-0 flex-1 pt-0.5">
+          <h3 className="text-[15px] font-semibold text-slate-800 tracking-tight leading-snug">
+            {modulo.id}. {modulo.title}
+          </h3>
+          <p className="text-[12.5px] text-slate-500 mt-1 leading-relaxed">{modulo.description}</p>
+        </div>
+        <div
+          className={`w-8 h-8 rounded-full ${modulo.arrowBg} text-white flex items-center justify-center shrink-0 mt-1 opacity-90 group-hover:opacity-100 transition-opacity`}
+        >
+          <ArrowRight size={15} strokeWidth={2.2} />
+        </div>
       </div>
-
-      <p className="text-[12.5px] text-slate-500 leading-relaxed flex-1">{item.description}</p>
-
-      <div className="flex items-center justify-between pt-2 border-t border-slate-50">
-        {item.ready ? (
-          <span className="text-[12px] font-medium text-violet-600 group-hover:text-violet-700 transition-colors">
-            Abrir registro
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 text-[11.5px] text-slate-400">
-            <ClipboardList size={12} />
-            Próximamente
-          </span>
-        )}
-        {item.ready && (
-          <ArrowUpRight size={14} className="text-slate-300 group-hover:text-violet-500 transition-colors" />
-        )}
-      </div>
+      {!modulo.ready && (
+        <p className="mt-3 text-[11px] font-medium text-slate-400">Próximamente</p>
+      )}
     </div>
   );
 
-  if (item.ready) {
-    return (
-      <Link href={item.href} className="block">
-        {content}
-      </Link>
-    );
-  }
-  return content;
+  if (!modulo.ready) return body;
+  return (
+    <Link href={modulo.href} className="block">
+      {body}
+    </Link>
+  );
 }
