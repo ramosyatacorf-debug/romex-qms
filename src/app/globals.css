@@ -2,17 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════
+   Material Design 3 — Design Tokens (RomEx)
+   Primary seed ≈ #1B6EF3 (blue enterprise)
+   ═══════════════════════════════════════════ */
 :root {
-  --background: #f7f8fb;
-  --foreground: #0f172a;
-  --muted: #64748b;
-  --border: #e8ecf1;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --surface: #ffffff;
-  --ring: rgba(37, 99, 235, 0.14);
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.06);
+  /* Primary */
+  --md-primary: #1b6ef3;
+  --md-on-primary: #ffffff;
+  --md-primary-container: #d6e3ff;
+  --md-on-primary-container: #001b3f;
+
+  /* Secondary */
+  --md-secondary: #555f71;
+  --md-on-secondary: #ffffff;
+  --md-secondary-container: #d9e3f8;
+  --md-on-secondary-container: #121c2b;
+
+  /* Tertiary */
+  --md-tertiary: #6b5778;
+  --md-on-tertiary: #ffffff;
+  --md-tertiary-container: #f2daff;
+  --md-on-tertiary-container: #251431;
+
+  /* Error */
+  --md-error: #ba1a1a;
+  --md-on-error: #ffffff;
+  --md-error-container: #ffdad6;
+  --md-on-error-container: #410002;
+
+  /* Surfaces (tonal hierarchy) */
+  --md-surface: #f8f9ff;
+  --md-on-surface: #191c20;
+  --md-on-surface-variant: #43474e;
+  --md-surface-container-lowest: #ffffff;
+  --md-surface-container-low: #f2f3fa;
+  --md-surface-container: #ecedf4;
+  --md-surface-container-high: #e6e8ef;
+  --md-surface-container-highest: #e1e2e9;
+
+  /* Outline */
+  --md-outline: #74777f;
+  --md-outline-variant: #c4c6cf;
+
+  /* Shape */
+  --md-radius-xs: 4px;
+  --md-radius-sm: 8px;
+  --md-radius-md: 12px;
+  --md-radius-lg: 16px;
+  --md-radius-xl: 28px;
+  --md-radius-full: 9999px;
+
+  /* Elevation (M3 tonal, soft shadow only as support) */
+  --md-elevation-1: 0 1px 2px rgba(25, 28, 32, 0.05), 0 1px 3px 1px rgba(25, 28, 32, 0.03);
+  --md-elevation-2: 0 1px 2px rgba(25, 28, 32, 0.06), 0 2px 6px 2px rgba(25, 28, 32, 0.04);
+  --md-elevation-3: 0 4px 8px 3px rgba(25, 28, 32, 0.05), 0 1px 3px rgba(25, 28, 32, 0.06);
+
+  /* Legacy aliases used across the app */
+  --background: var(--md-surface);
+  --foreground: var(--md-on-surface);
+  --muted: var(--md-on-surface-variant);
+  --border: var(--md-outline-variant);
+  --primary: var(--md-primary);
+  --primary-hover: #1558d6;
+  --surface: var(--md-surface-container-lowest);
+  --ring: color-mix(in srgb, var(--md-primary) 18%, transparent);
+  --shadow-sm: var(--md-elevation-1);
+  --shadow-md: var(--md-elevation-2);
 }
 
 html {
@@ -20,14 +76,14 @@ html {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+  font-family: var(--font-geist-sans), Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  letter-spacing: -0.011em;
+  letter-spacing: 0.01em;
 }
 
 * {
@@ -35,50 +91,117 @@ body {
 }
 
 ::selection {
-  background: rgba(124, 58, 237, 0.14);
-  color: #1e1b4b;
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
 }
 
 :focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--md-primary);
   outline-offset: 2px;
 }
 
-input, select, textarea, button {
+input,
+select,
+textarea,
+button {
   font: inherit;
 }
 
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d4dbe5;
-  border-radius: 999px;
+  background: var(--md-outline-variant);
+  border-radius: var(--md-radius-full);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b8c2d0;
+  background: var(--md-outline);
 }
 
 @layer components {
+  /* M3 Filled Button */
+  .md-btn-filled {
+    @apply inline-flex items-center justify-center gap-2 h-10 px-6 text-[14px] font-medium transition-all disabled:opacity-38 disabled:cursor-not-allowed;
+    border-radius: var(--md-radius-full);
+    background: var(--md-primary);
+    color: var(--md-on-primary);
+    box-shadow: var(--md-elevation-1);
+  }
+  .md-btn-filled:hover:not(:disabled) {
+    box-shadow: var(--md-elevation-2);
+    filter: brightness(1.05);
+  }
+
+  /* M3 Tonal Button */
+  .md-btn-tonal {
+    @apply inline-flex items-center justify-center gap-2 h-10 px-6 text-[14px] font-medium transition-all;
+    border-radius: var(--md-radius-full);
+    background: var(--md-secondary-container);
+    color: var(--md-on-secondary-container);
+  }
+  .md-btn-tonal:hover {
+    filter: brightness(0.97);
+  }
+
+  /* M3 Outlined Button */
+  .md-btn-outlined {
+    @apply inline-flex items-center justify-center gap-2 h-10 px-6 text-[14px] font-medium transition-all bg-transparent;
+    border-radius: var(--md-radius-full);
+    border: 1px solid var(--md-outline);
+    color: var(--md-primary);
+  }
+  .md-btn-outlined:hover {
+    background: color-mix(in srgb, var(--md-primary) 8%, transparent);
+  }
+
+  /* M3 Text Field (outlined) */
+  .md-field {
+    @apply w-full h-12 px-4 text-[16px] outline-none transition-all;
+    border-radius: var(--md-radius-sm);
+    border: 1px solid var(--md-outline);
+    background: var(--md-surface-container-lowest);
+    color: var(--md-on-surface);
+  }
+  .md-field::placeholder {
+    color: var(--md-on-surface-variant);
+  }
+  .md-field:focus {
+    border-color: var(--md-primary);
+    border-width: 2px;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  /* M3 Card */
+  .md-card {
+    background: var(--md-surface-container-lowest);
+    border-radius: var(--md-radius-lg);
+    border: 1px solid color-mix(in srgb, var(--md-outline-variant) 60%, transparent);
+    box-shadow: var(--md-elevation-1);
+  }
+
+  .md-card-elevated {
+    background: var(--md-surface-container-low);
+    border-radius: var(--md-radius-lg);
+    border: none;
+    box-shadow: var(--md-elevation-2);
+  }
+
+  /* Legacy aliases (compatibility) */
   .qms-card {
-    @apply bg-white border border-slate-200/90 rounded-2xl;
-    box-shadow: var(--shadow-sm);
+    @apply md-card;
   }
   .qms-input {
-    @apply w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-white text-[14px] text-slate-800 placeholder:text-slate-400 outline-none transition-all;
-  }
-  .qms-input:focus {
-    @apply border-violet-400 ring-2 ring-violet-500/10;
+    @apply md-field text-[14px] h-11;
   }
   .qms-btn-primary {
-    @apply inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 active:bg-violet-800 text-white text-[14px] font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed;
-    box-shadow: 0 1px 2px rgba(124, 58, 237, 0.2);
+    @apply md-btn-filled;
   }
   .qms-btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl border border-slate-200 text-[14px] font-medium text-slate-600 hover:bg-white transition-colors;
+    @apply md-btn-outlined;
   }
 }

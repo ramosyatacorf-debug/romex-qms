@@ -26,30 +26,49 @@ export default function DashboardPage() {
   const fecha = useMemo(() => todayLabel(), []);
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc]">
+    <div className="flex min-h-screen" style={{ background: "var(--md-surface)" }}>
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
       <main className="flex-1 flex flex-col min-w-0">
         <div className="flex-1 px-6 py-8 md:px-10 md:py-10">
-          <header className="mb-9 max-w-3xl">
-            <p className="text-[11px] font-semibold text-slate-400 tracking-wider uppercase mb-2">
+          <header className="mb-10 max-w-3xl">
+            <p
+              className="text-[11px] font-medium tracking-[0.08em] uppercase mb-2"
+              style={{ color: "var(--md-on-surface-variant)" }}
+            >
               Portal del ecosistema
             </p>
-            <h1 className="text-[26px] sm:text-[28px] font-semibold text-slate-900 tracking-tight mb-1.5">
+            <h1
+              className="text-[28px] sm:text-[32px] font-normal tracking-tight mb-1.5 leading-tight"
+              style={{ color: "var(--md-on-surface)" }}
+            >
               {saludo}, Rodrigo
             </h1>
-            <p className="text-slate-500 text-[14px] leading-relaxed capitalize">{fecha}</p>
-            <p className="text-slate-500 text-[14px] leading-relaxed mt-3 max-w-xl">
+            <p
+              className="text-[14px] leading-relaxed capitalize"
+              style={{ color: "var(--md-on-surface-variant)" }}
+            >
+              {fecha}
+            </p>
+            <p
+              className="text-[14px] leading-relaxed mt-3 max-w-xl"
+              style={{ color: "var(--md-on-surface-variant)" }}
+            >
               Elige un sistema. Cada uno se abre de forma independiente con su propia interfaz.
             </p>
           </header>
 
           <section>
             <div className="flex items-center justify-between gap-3 mb-4">
-              <h2 className="text-[12px] font-semibold text-slate-400 uppercase tracking-wider">
+              <h2
+                className="text-[12px] font-medium uppercase tracking-[0.08em]"
+                style={{ color: "var(--md-on-surface-variant)" }}
+              >
                 Sistemas
               </h2>
-              <span className="text-[12px] text-slate-400">3 activos · 1 en preparación</span>
+              <span className="text-[12px]" style={{ color: "var(--md-on-surface-variant)" }}>
+                3 activos · 1 en preparación
+              </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 max-w-5xl">
               <ModuleCard
@@ -90,7 +109,13 @@ export default function DashboardPage() {
           </section>
         </div>
 
-        <footer className="py-3.5 text-center text-[11px] text-slate-400 border-t border-slate-100">
+        <footer
+          className="py-3.5 text-center text-[11px] border-t"
+          style={{
+            color: "var(--md-on-surface-variant)",
+            borderColor: "color-mix(in srgb, var(--md-outline-variant) 50%, transparent)",
+          }}
+        >
           Exportadora RomEx S.A. — Quality Management System
         </footer>
       </main>

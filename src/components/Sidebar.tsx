@@ -41,11 +41,18 @@ function NavLink({
   children: React.ReactNode;
   external?: boolean;
 }) {
-  const className = `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-colors ${
+  const className = `flex items-center gap-3 px-3 py-2.5 text-[13.5px] font-medium transition-colors ${
     active
-      ? "bg-blue-50 text-blue-700"
-      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+      ? "text-[var(--md-on-secondary-container)]"
+      : "text-[var(--md-on-surface-variant)] hover:text-[var(--md-on-surface)] hover:bg-[var(--md-surface-container)]"
   } ${collapsed ? "justify-center px-0" : ""}`;
+
+  const style = active
+    ? {
+        background: "var(--md-secondary-container)",
+        borderRadius: "var(--md-radius-full)",
+      }
+    : { borderRadius: "var(--md-radius-full)" };
 
   if (external) {
     return (
@@ -55,6 +62,7 @@ function NavLink({
         rel="noopener noreferrer"
         title={typeof children === "string" ? children : undefined}
         className={className}
+        style={style}
       >
         {icon}
         {!collapsed && <span className="truncate">{children}</span>}
@@ -67,6 +75,7 @@ function NavLink({
       href={href}
       title={typeof children === "string" ? children : undefined}
       className={className}
+      style={style}
     >
       {icon}
       {!collapsed && <span className="truncate">{children}</span>}
@@ -87,7 +96,10 @@ function PortalNav({ collapsed, pathname }: { collapsed: boolean; pathname: stri
       </NavLink>
 
       {!collapsed && (
-        <p className="px-3 pt-5 pb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+        <p
+          className="px-3 pt-5 pb-1.5 text-[11px] font-medium uppercase tracking-[0.08em]"
+          style={{ color: "var(--md-on-surface-variant)" }}
+        >
           Sistemas
         </p>
       )}
@@ -170,9 +182,13 @@ function MicroNav({ collapsed, pathname }: { collapsed: boolean; pathname: strin
       <Link
         href="/dashboard"
         title="Volver al portal QMS"
-        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors mb-2 ${
+        className={`flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium transition-colors mb-2 ${
           collapsed ? "justify-center px-0" : ""
         }`}
+        style={{
+          color: "var(--md-on-surface-variant)",
+          borderRadius: "var(--md-radius-full)",
+        }}
       >
         <ArrowLeft size={16} className="shrink-0" />
         {!collapsed && <span>Portal QMS</span>}
@@ -180,23 +196,19 @@ function MicroNav({ collapsed, pathname }: { collapsed: boolean; pathname: strin
 
       {!collapsed && (
         <div className="px-3 py-2 mb-1">
-          <p className="text-[11px] font-semibold text-violet-600 uppercase tracking-wider">Microbiología</p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Sistema de laboratorio</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "var(--md-primary)" }}>
+            Microbiología
+          </p>
+          <p className="text-[11px] mt-0.5" style={{ color: "var(--md-on-surface-variant)" }}>
+            Sistema de laboratorio
+          </p>
         </div>
       )}
 
       {items.map((item) => {
-        const active = item.exact
-          ? pathname === item.href
-          : pathname.startsWith(item.href);
+        const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
         return (
-          <NavLink
-            key={item.href}
-            href={item.href}
-            active={active}
-            collapsed={collapsed}
-            icon={item.icon}
-          >
+          <NavLink key={item.href} href={item.href} active={active} collapsed={collapsed} icon={item.icon}>
             {item.label}
           </NavLink>
         );
@@ -220,9 +232,13 @@ function QualyNav({ collapsed }: { collapsed: boolean }) {
       <Link
         href="/dashboard"
         title="Volver al portal QMS"
-        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors mb-2 ${
+        className={`flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium transition-colors mb-2 ${
           collapsed ? "justify-center px-0" : ""
         }`}
+        style={{
+          color: "var(--md-on-surface-variant)",
+          borderRadius: "var(--md-radius-full)",
+        }}
       >
         <ArrowLeft size={16} className="shrink-0" />
         {!collapsed && <span>Portal QMS</span>}
@@ -230,8 +246,12 @@ function QualyNav({ collapsed }: { collapsed: boolean }) {
 
       {!collapsed && (
         <div className="px-3 py-2 mb-1">
-          <p className="text-[11px] font-semibold text-blue-600 uppercase tracking-wider">Qualy AI</p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Asistente inteligente</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "var(--md-primary)" }}>
+            Qualy AI
+          </p>
+          <p className="text-[11px] mt-0.5" style={{ color: "var(--md-on-surface-variant)" }}>
+            Asistente inteligente
+          </p>
         </div>
       )}
 
@@ -255,18 +275,26 @@ export default function Sidebar({
   const pathname = usePathname();
 
   const isMicroSub =
-    pathname.startsWith("/dashboard/microbiologia/") &&
-    pathname !== "/dashboard/microbiologia";
+    pathname.startsWith("/dashboard/microbiologia/") && pathname !== "/dashboard/microbiologia";
   const isQualy = pathname.startsWith("/dashboard/qualy-ai");
   const isPortal = !isMicroSub && !isQualy;
 
   return (
     <aside
-      className={`h-screen sticky top-0 bg-white border-r border-slate-200 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
+      className={`h-screen sticky top-0 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
         collapsed ? "w-[72px]" : "w-[260px]"
       }`}
+      style={{
+        background: "var(--md-surface-container-low)",
+        borderRight: "1px solid color-mix(in srgb, var(--md-outline-variant) 55%, transparent)",
+      }}
     >
-      <div className="h-[72px] flex items-center gap-2 px-3 border-b border-slate-100">
+      <div
+        className="h-[72px] flex items-center gap-2 px-3"
+        style={{
+          borderBottom: "1px solid color-mix(in srgb, var(--md-outline-variant) 45%, transparent)",
+        }}
+      >
         {!collapsed && (
           <Link href="/dashboard" className="flex-1 flex items-center min-w-0 py-1">
             <Image
@@ -284,9 +312,13 @@ export default function Sidebar({
         <button
           type="button"
           onClick={onToggle}
-          className={`p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors shrink-0 ${
+          className={`p-2 transition-colors shrink-0 hover:bg-[var(--md-surface-container)] ${
             collapsed ? "mx-auto" : ""
           }`}
+          style={{
+            color: "var(--md-on-surface-variant)",
+            borderRadius: "var(--md-radius-full)",
+          }}
           title={collapsed ? "Expandir menú" : "Ocultar menú"}
         >
           {collapsed ? <PanelLeft size={18} /> : <PanelLeftClose size={18} />}
@@ -299,31 +331,44 @@ export default function Sidebar({
         {isQualy && <QualyNav collapsed={collapsed} />}
       </nav>
 
-      <div className="border-t border-slate-100 p-2.5 space-y-1">
+      <div
+        className="p-2.5 space-y-1"
+        style={{
+          borderTop: "1px solid color-mix(in srgb, var(--md-outline-variant) 45%, transparent)",
+        }}
+      >
         {isPortal && (
           <Link
             href="/dashboard"
             title="Configuraciones"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors ${
+            className={`flex items-center gap-3 px-3 py-2.5 text-[13.5px] font-medium transition-colors hover:bg-[var(--md-surface-container)] ${
               collapsed ? "justify-center px-0" : ""
             }`}
+            style={{
+              color: "var(--md-on-surface-variant)",
+              borderRadius: "var(--md-radius-full)",
+            }}
           >
             <Settings size={18} strokeWidth={1.8} className="shrink-0" />
             {!collapsed && <span>Configuraciones</span>}
           </Link>
         )}
 
-        <div
-          className={`flex items-center gap-3 px-3 py-2.5 ${
-            collapsed ? "justify-center px-0" : ""
-          }`}
-          title={userName}
-        >
-          <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 shrink-0">
+        <div className={`flex items-center gap-3 px-3 py-2.5 ${collapsed ? "justify-center px-0" : ""}`} title={userName}>
+          <div
+            className="w-8 h-8 flex items-center justify-center shrink-0"
+            style={{
+              borderRadius: "var(--md-radius-full)",
+              background: "var(--md-primary-container)",
+              color: "var(--md-on-primary-container)",
+            }}
+          >
             <User size={15} />
           </div>
           {!collapsed && (
-            <p className="text-[13px] font-medium text-slate-800 truncate">{userName}</p>
+            <p className="text-[13px] font-medium truncate" style={{ color: "var(--md-on-surface)" }}>
+              {userName}
+            </p>
           )}
         </div>
       </div>
