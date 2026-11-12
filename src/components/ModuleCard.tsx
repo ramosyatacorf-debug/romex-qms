@@ -23,25 +23,25 @@ const tone = {
   microscope: {
     iconBg: "bg-violet-50",
     iconColor: "text-violet-600",
-    hover: "hover:border-violet-200 hover:shadow-violet-100/60",
+    hover: "hover:border-violet-200/80 hover:shadow-[0_6px_20px_rgba(124,58,237,0.08)]",
     accent: "group-hover:text-violet-700",
   },
   flask: {
     iconBg: "bg-sky-50",
     iconColor: "text-sky-600",
-    hover: "hover:border-sky-200 hover:shadow-sky-100/60",
+    hover: "hover:border-sky-200/80 hover:shadow-[0_6px_20px_rgba(14,165,233,0.08)]",
     accent: "group-hover:text-sky-700",
   },
   folder: {
     iconBg: "bg-amber-50",
     iconColor: "text-amber-600",
-    hover: "hover:border-amber-200 hover:shadow-amber-100/60",
+    hover: "hover:border-amber-200/80 hover:shadow-[0_6px_20px_rgba(245,158,11,0.08)]",
     accent: "group-hover:text-amber-700",
   },
   ai: {
     iconBg: "bg-blue-50",
     iconColor: "text-blue-600",
-    hover: "hover:border-blue-200 hover:shadow-blue-100/60",
+    hover: "hover:border-blue-200/80 hover:shadow-[0_6px_20px_rgba(37,99,235,0.08)]",
     accent: "group-hover:text-blue-700",
   },
   empty: {
@@ -68,26 +68,27 @@ export default function ModuleCard({
 
   const body = (
     <div
-      className={`group relative bg-white border border-slate-200 rounded-2xl p-5 transition-all duration-200 min-h-[168px] flex flex-col ${
+      className={`group relative bg-white border border-slate-200/90 rounded-2xl p-5 transition-all duration-200 min-h-[164px] flex flex-col ${
         isSoon
-          ? "opacity-55"
-          : `${t.hover} hover:shadow-md cursor-pointer`
+          ? "opacity-50"
+          : `${t.hover} cursor-pointer`
       }`}
+      style={isSoon ? undefined : { boxShadow: "0 1px 2px rgba(15,23,42,0.03)" }}
     >
-      <div className="flex items-start justify-between gap-3 mb-4">
-        <p className="text-[11px] text-slate-400 font-semibold tracking-wider uppercase">
+      <div className="flex items-start justify-between gap-3 mb-3.5">
+        <p className="text-[10.5px] text-slate-400 font-semibold tracking-[0.06em] uppercase pt-0.5">
           Sistema {number}
         </p>
         {Icon && (
           <div
-            className={`w-10 h-10 rounded-xl ${t.iconBg} ${t.iconColor} flex items-center justify-center shrink-0`}
+            className={`w-9 h-9 rounded-xl ${t.iconBg} ${t.iconColor} flex items-center justify-center shrink-0`}
           >
-            <Icon size={19} strokeWidth={1.6} />
+            <Icon size={17} strokeWidth={1.65} />
           </div>
         )}
       </div>
 
-      <h3 className="text-[15.5px] font-semibold text-slate-900 leading-snug mb-1.5">
+      <h3 className="text-[15px] font-semibold text-slate-900 leading-snug mb-1.5 tracking-tight">
         {title || "Próximamente"}
       </h3>
 
@@ -97,7 +98,7 @@ export default function ModuleCard({
         </p>
       )}
 
-      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+      <div className="mt-4 pt-3 border-t border-slate-100/90 flex items-center justify-between">
         {isSoon ? (
           <span className="text-[12px] text-slate-400 font-medium">En preparación</span>
         ) : (
@@ -107,8 +108,8 @@ export default function ModuleCard({
         )}
         {!isSoon && (
           <ArrowUpRight
-            size={16}
-            className="text-slate-300 group-hover:text-slate-600 transition-colors"
+            size={15}
+            className="text-slate-300 group-hover:text-slate-500 transition-colors"
           />
         )}
       </div>
