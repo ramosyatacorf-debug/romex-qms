@@ -19,7 +19,7 @@ export default function GranoPage() {
           href="/dashboard/microbiologia"
           className="inline-flex items-center gap-2 h-10 px-4 rounded-xl border border-slate-200 text-[13px] font-medium text-slate-600 hover:bg-slate-50"
         >
-          <ArrowLeft size={14} /> Volver al inicio ZORKA
+          <ArrowLeft size={14} /> Volver al inicio
         </Link>
       </div>
     </MicroShell>

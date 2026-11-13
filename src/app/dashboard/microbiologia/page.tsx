@@ -16,7 +16,7 @@ import {
   Brush,
   Monitor,
   ShieldCheck,
-  Wheat,
+  Package,
   Microscope,
   FlaskConical,
   ChevronDown,
@@ -120,7 +120,7 @@ const MODULOS: Modulo[] = [
     description: "Control de calidad de grano",
     href: "/dashboard/microbiologia/grano",
     ready: false,
-    icon: <Wheat size={26} strokeWidth={1.6} />,
+    icon: <Package size={26} strokeWidth={1.6} />,
     iconBg: "bg-amber-100",
     iconColor: "text-amber-500",
     arrowBg: "bg-amber-500",
@@ -163,7 +163,6 @@ export default function MicrobiologiaHubPage() {
 
   return (
     <div className="min-h-screen flex bg-[#eef3fb]">
-      {/* Sidebar */}
       <aside className="hidden md:flex w-[232px] shrink-0 flex-col bg-white border-r border-slate-200/80">
         <div className="px-5 pt-6 pb-5">
           <div className="flex items-center gap-2.5">
@@ -171,8 +170,8 @@ export default function MicrobiologiaHubPage() {
               <FlaskConical size={22} strokeWidth={1.8} />
             </div>
             <div>
-              <p className="text-[16px] font-bold text-slate-800 tracking-tight leading-none">ZORKA</p>
-              <p className="text-[10px] text-slate-400 mt-1 leading-tight">Calidad que nos inspira</p>
+              <p className="text-[16px] font-bold text-slate-800 tracking-tight leading-none">RomEx</p>
+              <p className="text-[10px] text-slate-400 mt-1 leading-tight">Microbiología</p>
             </div>
           </div>
         </div>
@@ -191,7 +190,7 @@ export default function MicrobiologiaHubPage() {
         <div className="px-4 py-4 border-t border-slate-100">
           <div className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-50 cursor-pointer">
             <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[12px] font-semibold">
-              A
+              R
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[12.5px] font-medium text-slate-700 truncate">Usuario</p>
@@ -202,14 +201,12 @@ export default function MicrobiologiaHubPage() {
         </div>
       </aside>
 
-      {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
         <header className="h-[64px] bg-white/80 backdrop-blur border-b border-slate-200/70 px-5 sm:px-8 flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-[12px] text-slate-400 font-medium">Sistema de Microbiología</p>
+            <p className="text-[12px] text-slate-400 font-medium">Exportadora RomEx S.A.</p>
             <h1 className="text-[22px] sm:text-[24px] font-bold text-[#1e3a8a] tracking-tight leading-none">
-              ZORKA
+              Microbiología
             </h1>
           </div>
 
@@ -224,12 +221,10 @@ export default function MicrobiologiaHubPage() {
               <Clock size={14} className="text-slate-400" />
               {hora}
             </span>
-            <div className="w-8 h-8 rounded-full bg-slate-200 border border-white shadow-sm" />
           </div>
         </header>
 
         <main className="flex-1 px-5 sm:px-8 py-7 sm:py-8 relative overflow-hidden">
-          {/* decorative bg */}
           <div className="pointer-events-none absolute right-0 top-0 w-[420px] h-[420px] opacity-[0.12]">
             <div className="absolute right-10 top-8 w-40 h-40 rounded-full border-2 border-sky-400" />
             <div className="absolute right-28 top-24 w-24 h-24 rounded-full border border-sky-300" />
@@ -237,7 +232,7 @@ export default function MicrobiologiaHubPage() {
 
           <div className="relative max-w-5xl">
             <h2 className="text-[22px] sm:text-[26px] font-bold text-[#1e3a8a] tracking-tight mb-1.5">
-              Bienvenido al Sistema de Microbiología ZORKA
+              Bienvenido al Sistema de Microbiología
             </h2>
             <p className="text-[14px] text-slate-500 mb-8">
               Seleccione el módulo que desea gestionar:
@@ -252,7 +247,7 @@ export default function MicrobiologiaHubPage() {
         </main>
 
         <footer className="px-5 sm:px-8 py-3 flex items-center justify-between text-[11.5px] text-slate-400 border-t border-slate-200/60 bg-white/50">
-          <span>Sistema de Microbiología ZORKA v1.0</span>
+          <span>Sistema de Microbiología · RomEx QMS</span>
           <span className="inline-flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             Sistema en línea

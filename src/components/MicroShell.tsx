@@ -2,17 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Home,
-  LayoutGrid,
-  Settings,
-  BarChart3,
-  Info,
-  LogOut,
-  FlaskConical,
-  ChevronDown,
-  ArrowLeft,
-} from "lucide-react";
+import { Home, LogOut, FlaskConical, ArrowLeft } from "lucide-react";
 
 const NAV = [
   { href: "/dashboard/microbiologia", label: "Inicio", exact: true },
@@ -44,7 +34,7 @@ export default function MicroShell({
               <FlaskConical size={20} strokeWidth={1.8} />
             </div>
             <div>
-              <p className="text-[15px] font-bold text-slate-800 tracking-tight leading-none">ZORKA</p>
+              <p className="text-[15px] font-bold text-slate-800 tracking-tight leading-none">RomEx</p>
               <p className="text-[10px] text-slate-400 mt-0.5">Microbiología</p>
             </div>
           </Link>
@@ -86,7 +76,7 @@ export default function MicroShell({
         <header className="h-[56px] bg-white/85 backdrop-blur border-b border-slate-200/70 px-4 sm:px-6 flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[13px] font-semibold text-slate-900 truncate">{title || "Microbiología"}</p>
-            <p className="text-[11px] text-sky-600 font-medium truncate">{code || "Sistema ZORKA"}</p>
+            <p className="text-[11px] text-sky-600 font-medium truncate">{code || "Exportadora RomEx S.A."}</p>
           </div>
           <div className="flex items-center gap-2">
             <Link
@@ -109,7 +99,7 @@ export default function MicroShell({
         <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-7">{children}</main>
 
         <footer className="px-4 sm:px-6 py-2.5 text-[11px] text-slate-400 border-t border-slate-100 flex items-center justify-between">
-          <span>Sistema de Microbiología ZORKA</span>
+          <span>Sistema de Microbiología · RomEx QMS</span>
           <span className="inline-flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             En línea
