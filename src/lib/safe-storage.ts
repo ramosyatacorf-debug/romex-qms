@@ -1,4 +1,4 @@
-/** Lectura/escritura segura de localStorage con manejo de cuota y JSON inválido */
+/** Lectura/escritura segura de localStorage (cuota + JSON inválido) */
 
 export function safeGetJSON<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -18,8 +18,8 @@ export function safeSetJSON(key: string, value: unknown): { ok: boolean; error?:
     return { ok: true };
   } catch (e) {
     const msg =
-      e instanceof DOMException && e.name === "QuotaExceededError"
-        ? "Almacenamiento lleno. Elimina registros antiguos o usa archivos más livianos."
+      e instanceof DOMException && (e.name === "QuotaExceededError" || e.code === 22)
+        ? "Almacenamiento lleno. Elimina registros antiguos o usa un PDF más liviano."
         : "No se pudo guardar en este dispositivo.";
     return { ok: false, error: msg };
   }

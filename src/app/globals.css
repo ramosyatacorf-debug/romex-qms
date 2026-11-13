@@ -2,36 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ═══════════════════════════════════════════
-   Material Design 3 — Design Tokens (RomEx)
-   Primary seed ≈ #1B6EF3 (blue enterprise)
-   ═══════════════════════════════════════════ */
+/* Material Design 3 — Design Tokens (RomEx) */
 :root {
-  /* Primary */
   --md-primary: #1b6ef3;
   --md-on-primary: #ffffff;
   --md-primary-container: #d6e3ff;
   --md-on-primary-container: #001b3f;
 
-  /* Secondary */
   --md-secondary: #555f71;
   --md-on-secondary: #ffffff;
   --md-secondary-container: #d9e3f8;
   --md-on-secondary-container: #121c2b;
 
-  /* Tertiary */
   --md-tertiary: #6b5778;
   --md-on-tertiary: #ffffff;
   --md-tertiary-container: #f2daff;
   --md-on-tertiary-container: #251431;
 
-  /* Error */
   --md-error: #ba1a1a;
   --md-on-error: #ffffff;
   --md-error-container: #ffdad6;
   --md-on-error-container: #410002;
 
-  /* Surfaces (tonal hierarchy) */
   --md-surface: #f8f9ff;
   --md-on-surface: #191c20;
   --md-on-surface-variant: #43474e;
@@ -41,11 +33,9 @@
   --md-surface-container-high: #e6e8ef;
   --md-surface-container-highest: #e1e2e9;
 
-  /* Outline */
   --md-outline: #74777f;
   --md-outline-variant: #c4c6cf;
 
-  /* Shape */
   --md-radius-xs: 4px;
   --md-radius-sm: 8px;
   --md-radius-md: 12px;
@@ -53,12 +43,10 @@
   --md-radius-xl: 28px;
   --md-radius-full: 9999px;
 
-  /* Elevation (M3 tonal, soft shadow only as support) */
   --md-elevation-1: 0 1px 2px rgba(25, 28, 32, 0.05), 0 1px 3px 1px rgba(25, 28, 32, 0.03);
   --md-elevation-2: 0 1px 2px rgba(25, 28, 32, 0.06), 0 2px 6px 2px rgba(25, 28, 32, 0.04);
   --md-elevation-3: 0 4px 8px 3px rgba(25, 28, 32, 0.05), 0 1px 3px rgba(25, 28, 32, 0.06);
 
-  /* Legacy aliases used across the app */
   --background: var(--md-surface);
   --foreground: var(--md-on-surface);
   --muted: var(--md-on-surface-variant);
@@ -123,7 +111,7 @@ button {
 }
 
 @layer components {
-  /* M3 Filled Button */
+  /* M3 Filled Button — solo utilidades Tailwind en @apply */
   .md-btn-filled {
     @apply inline-flex items-center justify-center gap-2 h-10 px-6 text-[14px] font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed;
     border-radius: var(--md-radius-full);
@@ -136,7 +124,6 @@ button {
     filter: brightness(1.05);
   }
 
-  /* M3 Tonal Button */
   .md-btn-tonal {
     @apply inline-flex items-center justify-center gap-2 h-10 px-6 text-[14px] font-medium transition-all;
     border-radius: var(--md-radius-full);
@@ -147,7 +134,6 @@ button {
     filter: brightness(0.97);
   }
 
-  /* M3 Outlined Button */
   .md-btn-outlined {
     @apply inline-flex items-center justify-center gap-2 h-10 px-6 text-[14px] font-medium transition-all bg-transparent;
     border-radius: var(--md-radius-full);
@@ -158,7 +144,6 @@ button {
     background: color-mix(in srgb, var(--md-primary) 8%, transparent);
   }
 
-  /* M3 Text Field (outlined) */
   .md-field {
     @apply w-full h-12 px-4 text-[16px] outline-none transition-all;
     border-radius: var(--md-radius-sm);
@@ -176,7 +161,6 @@ button {
     padding-right: 15px;
   }
 
-  /* M3 Card */
   .md-card {
     background: var(--md-surface-container-lowest);
     border-radius: var(--md-radius-lg);
@@ -191,17 +175,49 @@ button {
     box-shadow: var(--md-elevation-2);
   }
 
-  /* Legacy aliases (compatibility) */
+  /* Alias legacy — expandido (NO @apply de clases custom) */
   .qms-card {
-    @apply md-card;
+    background: var(--md-surface-container-lowest);
+    border-radius: var(--md-radius-lg);
+    border: 1px solid color-mix(in srgb, var(--md-outline-variant) 60%, transparent);
+    box-shadow: var(--md-elevation-1);
   }
+
   .qms-input {
-    @apply md-field text-[14px] h-11;
+    @apply w-full h-11 px-3.5 text-[14px] outline-none transition-all;
+    border-radius: var(--md-radius-sm);
+    border: 1px solid var(--md-outline);
+    background: var(--md-surface-container-lowest);
+    color: var(--md-on-surface);
   }
+  .qms-input::placeholder {
+    color: var(--md-on-surface-variant);
+  }
+  .qms-input:focus {
+    border-color: var(--md-primary);
+    border-width: 2px;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--md-primary) 14%, transparent);
+  }
+
   .qms-btn-primary {
-    @apply md-btn-filled;
+    @apply inline-flex items-center justify-center gap-2 h-10 px-6 text-[14px] font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed;
+    border-radius: var(--md-radius-full);
+    background: var(--md-primary);
+    color: var(--md-on-primary);
+    box-shadow: var(--md-elevation-1);
   }
+  .qms-btn-primary:hover:not(:disabled) {
+    box-shadow: var(--md-elevation-2);
+    filter: brightness(1.05);
+  }
+
   .qms-btn-ghost {
-    @apply md-btn-outlined;
+    @apply inline-flex items-center justify-center gap-2 h-10 px-6 text-[14px] font-medium transition-all bg-transparent;
+    border-radius: var(--md-radius-full);
+    border: 1px solid var(--md-outline);
+    color: var(--md-primary);
+  }
+  .qms-btn-ghost:hover {
+    background: color-mix(in srgb, var(--md-primary) 8%, transparent);
   }
 }
