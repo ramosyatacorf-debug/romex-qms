@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import MicroShell from "@/components/MicroShell";
 import { ArrowLeft, Plus, Save, Trash2, Eye, FileText } from "lucide-react";
+import { safeGetJSON, safeSetJSON } from "@/lib/safe-storage";
 
 interface PuntoResultado {
   codigo: string;
@@ -59,17 +60,11 @@ function emptyPuntos(base: typeof BARREDURAS_BASE): PuntoResultado[] {
 }
 
 function loadRegistros(): RegistroEB[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as RegistroEB[]) : [];
-  } catch {
-    return [];
-  }
+  return safeGetJSON<RegistroEB[]>(STORAGE_KEY, []);
 }
 
-function saveRegistros(items: RegistroEB[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+function saveRegistros(items: RegistroEB[]): { ok: boolean; error?: string } {
+  return safeSetJSON(STORAGE_KEY, items);
 }
 
 function formatDateDisplay(iso: string) {
@@ -191,6 +186,7 @@ export default function EnterobacteriasPage() {
   const [eficacia, setEficacia] = useState("ok");
   const [analista, setAnalista] = useState("");
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   useEffect(() => {
     setRegistros(loadRegistros());
@@ -208,6 +204,7 @@ export default function EnterobacteriasPage() {
     setResiduos(emptyPuntos(RESIDUOS_BASE));
     setEficacia("ok");
     setAnalista("");
+    setSaveError("");
   };
 
   const updatePunto = (
@@ -235,6 +232,7 @@ export default function EnterobacteriasPage() {
     e.preventDefault();
     if (!fechaToma || !fechaAnalisis) return;
     setSaving(true);
+    setSaveError("");
     try {
       const nuevo: RegistroEB = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -247,8 +245,12 @@ export default function EnterobacteriasPage() {
         createdAt: new Date().toISOString(),
       };
       const updated = [nuevo, ...registros];
+      const result = saveRegistros(updated);
+      if (!result.ok) {
+        setSaveError(result.error || "No se pudo guardar");
+        return;
+      }
       setRegistros(updated);
-      saveRegistros(updated);
       resetForm();
       setMode("lista");
     } finally {
@@ -259,8 +261,12 @@ export default function EnterobacteriasPage() {
   const handleDelete = (id: string) => {
     if (!confirm("Eliminar este registro de enterobacterias?")) return;
     const updated = registros.filter((r) => r.id !== id);
+    const result = saveRegistros(updated);
+    if (!result.ok) {
+      alert(result.error || "No se pudo eliminar");
+      return;
+    }
     setRegistros(updated);
-    saveRegistros(updated);
     if (selected?.id === id) {
       setSelected(null);
       setMode("lista");
@@ -381,6 +387,11 @@ export default function EnterobacteriasPage() {
           </button>
           <h1 className="text-[20px] font-semibold text-slate-800 mb-1">Nuevo registro</h1>
           <p className="text-[13.5px] text-slate-500 mb-6">LM-RAE-004 · Enterobacterias</p>
+          {saveError && (
+            <p className="mb-4 text-[13px] text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+              {saveError}
+            </p>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <Field label="Fecha de toma de muestra">
               <input
