@@ -73,27 +73,31 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-5">
             <div>
               <label
-                className="block text-[12px] font-medium mb-1.5"
+                htmlFor="login-email"
+                className="block text-[12px] font-medium mb-2"
                 style={{ color: "var(--md-on-surface-variant)" }}
               >
                 Correo electrónico
               </label>
               <div className="relative">
-                <Mail
-                  size={16}
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                <span
+                  className="absolute left-0 top-0 bottom-0 w-12 flex items-center justify-center pointer-events-none z-[1]"
                   style={{ color: "var(--md-on-surface-variant)" }}
-                />
+                  aria-hidden
+                >
+                  <Mail size={18} strokeWidth={1.75} />
+                </span>
                 <input
+                  id="login-email"
                   type="email"
                   autoComplete="username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="nombre@romex.com"
-                  className="md-field pl-10 text-[14px] h-12"
+                  className="md-field md-field-with-leading text-[14px] h-12"
                   required
                 />
               </div>
@@ -101,37 +105,38 @@ export default function LoginPage() {
 
             <div>
               <label
-                className="block text-[12px] font-medium mb-1.5"
+                htmlFor="login-password"
+                className="block text-[12px] font-medium mb-2"
                 style={{ color: "var(--md-on-surface-variant)" }}
               >
                 Contraseña
               </label>
               <div className="relative">
-                <Lock
-                  size={16}
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                <span
+                  className="absolute left-0 top-0 bottom-0 w-12 flex items-center justify-center pointer-events-none z-[1]"
                   style={{ color: "var(--md-on-surface-variant)" }}
-                />
+                  aria-hidden
+                >
+                  <Lock size={18} strokeWidth={1.75} />
+                </span>
                 <input
-                  type={showPassword ? "text" : "password"}
+                  id="login-password"
+ase type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Tu contraseña"
-                  className="md-field pl-10 pr-11 text-[14px] h-12"
+                  className="md-field md-field-with-leading md-field-with-trailing text-[14px] h-12"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 transition-colors"
-                  style={{
-                    color: "var(--md-on-surface-variant)",
-                    borderRadius: "var(--md-radius-full)",
-                  }}
+                  className="absolute right-0 top-0 bottom-0 w-12 flex items-center justify-center transition-colors z-[1]"
+                  style={{ color: "var(--md-on-surface-variant)" }}
                   aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <EyeOff size={18} strokeWidth={1.75} /> : <Eye size={18} strokeWidth={1.75} />}
                 </button>
               </div>
             </div>
