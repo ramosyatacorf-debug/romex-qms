@@ -208,7 +208,12 @@ export default function SshhPage() {
               </select>
             </Field>
             <Field label="Personal de limpieza">
-              <input value={personal} onChange={(e) => setPersonal(e.target.value)} placeholder="José / Luzmila" className={inputClass} />
+              <input
+                value={personal}
+                onChange={(e) => setPersonal(e.target.value)}
+                placeholder="Nombre del personal"
+                className={inputClass}
+              />
             </Field>
             <Field label="Inspector">
               <input value={inspector} onChange={(e) => setInspector(e.target.value)} placeholder="Nereyda" className={inputClass} />
