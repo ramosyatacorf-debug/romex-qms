@@ -298,7 +298,7 @@ function ModuloCard({ modulo }: { modulo: Modulo }) {
       className={`group relative bg-white rounded-2xl border border-slate-100 p-5 min-h-[118px] transition-all duration-200 ${
         modulo.ready
           ? "hover:shadow-[0_8px_30px_rgba(30,58,138,0.08)] hover:border-slate-200 cursor-pointer"
-          : "opacity-55"
+          : "opacity-50"
       }`}
     >
       <div className="flex items-start gap-4">

@@ -65,7 +65,7 @@ export default function ModuleCard({
     <div
       className={`group relative flex flex-col min-h-[168px] p-5 transition-all duration-200 ${
         isSoon
-          ? "opacity-48 cursor-default"
+          ? "opacity-50 cursor-default"
           : `cursor-pointer ${t.hover}`
       }`}
       style={{
