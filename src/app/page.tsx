@@ -121,7 +121,7 @@ export default function LoginPage() {
                 </span>
                 <input
                   id="login-password"
-ase type={showPassword ? "text" : "password"}
+                  type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
