@@ -12,6 +12,7 @@ import {
   inputClass,
 } from "@/components/ui";
 import { ArrowLeft, Plus, Save, Bath } from "lucide-react";
+import { safeGetJSON, safeSetJSON } from "@/lib/safe-storage";
 
 type Estado = "C" | "N" | "";
 
@@ -53,16 +54,12 @@ const ITEMS_DAMAS = [
 const STORAGE_KEY = "romex_sshh";
 
 function load(): RegistroSSHH[] {
-  if (typeof window === "undefined") return [];
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  } catch {
-    return [];
-  }
+  return safeGetJSON<RegistroSSHH[]>(STORAGE_KEY, []);
 }
 
 function save(items: RegistroSSHH[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  const res = safeSetJSON(STORAGE_KEY, items);
+  if (!res.ok && res.error) alert(res.error);
 }
 
 function fmt(iso: string) {

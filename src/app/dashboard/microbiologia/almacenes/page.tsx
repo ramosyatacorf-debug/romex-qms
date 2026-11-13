@@ -12,6 +12,7 @@ import {
   inputClass,
 } from "@/components/ui";
 import { ArrowLeft, Plus, Save, Warehouse } from "lucide-react";
+import { safeGetJSON, safeSetJSON } from "@/lib/safe-storage";
 
 type RN = "R" | "NR" | "";
 
@@ -39,16 +40,12 @@ const AREAS = [
 const STORAGE_KEY = "romex_limpieza_almacenes";
 
 function load(): RegistroLimpieza[] {
-  if (typeof window === "undefined") return [];
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  } catch {
-    return [];
-  }
+  return safeGetJSON<RegistroLimpieza[]>(STORAGE_KEY, []);
 }
 
 function save(items: RegistroLimpieza[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  const res = safeSetJSON(STORAGE_KEY, items);
+  if (!res.ok && res.error) alert(res.error);
 }
 
 function fmt(iso: string) {
@@ -76,7 +73,7 @@ function RNToggle({
           className={`h-10 flex-1 rounded-xl text-[13px] font-semibold transition-colors ${
             value === "R"
               ? "bg-emerald-500 text-white shadow-sm shadow-emerald-500/20"
-              : "bg-slate-100 text-slate-500 hover:bg-slate-150"
+              : "bg-slate-100 text-slate-500 hover:bg-slate-200"
           }`}
         >
           R
@@ -87,7 +84,7 @@ function RNToggle({
           className={`h-10 flex-1 rounded-xl text-[13px] font-semibold transition-colors ${
             value === "NR"
               ? "bg-red-500 text-white shadow-sm shadow-red-500/20"
-              : "bg-slate-100 text-slate-500 hover:bg-slate-150"
+              : "bg-slate-100 text-slate-500 hover:bg-slate-200"
           }`}
         >
           NR

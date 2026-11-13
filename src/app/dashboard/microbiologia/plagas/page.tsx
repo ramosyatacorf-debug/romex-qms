@@ -12,6 +12,7 @@ import {
   inputClass,
 } from "@/components/ui";
 import { ArrowLeft, Plus, Save, Bug } from "lucide-react";
+import { safeGetJSON, safeSetJSON } from "@/lib/safe-storage";
 
 interface EventoPlaga {
   id: string;
@@ -29,16 +30,12 @@ interface EventoPlaga {
 const STORAGE_KEY = "romex_plagas";
 
 function load(): EventoPlaga[] {
-  if (typeof window === "undefined") return [];
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  } catch {
-    return [];
-  }
+  return safeGetJSON<EventoPlaga[]>(STORAGE_KEY, []);
 }
 
 function save(items: EventoPlaga[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  const res = safeSetJSON(STORAGE_KEY, items);
+  if (!res.ok && res.error) alert(res.error);
 }
 
 function fmt(iso: string) {
