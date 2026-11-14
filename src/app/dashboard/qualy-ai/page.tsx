@@ -65,7 +65,7 @@ export default function QualyAIPage() {
   const [transcript, setTranscript] = useState("");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMsg[]>([]);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
   const statusRef = useRef<Status>("idle");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -117,10 +117,7 @@ export default function QualyAIPage() {
   }, []);
 
   const startListening = () => {
-    const w = window as unknown as {
-      SpeechRecognition?: new () => SpeechRecognition;
-      webkitSpeechRecognition?: new () => SpeechRecognition;
-    };
+    const w = window as any;
     const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
 
     if (!SR) {
@@ -143,7 +140,7 @@ export default function QualyAIPage() {
       setTranscript("");
     };
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: any) => {
       let finalText = "";
       let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -203,7 +200,6 @@ export default function QualyAIPage() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#0b1220] text-slate-100">
-      {/* Sidebar mínima Qualy */}
       <aside className="hidden md:flex w-[220px] shrink-0 flex-col border-r border-white/5 bg-[#0e1628]">
         <div className="px-4 pt-5 pb-4 flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-blue-500/15 border border-blue-400/20 flex items-center justify-center text-blue-300">
@@ -239,7 +235,6 @@ export default function QualyAIPage() {
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0 relative">
-        {/* Header */}
         <header className="shrink-0 h-14 px-4 sm:px-6 flex items-center justify-between border-b border-white/5 bg-[#0b1220]/80 backdrop-blur">
           <div className="min-w-0">
             <p className="text-[13px] font-semibold text-slate-200">Qualy · Asistente</p>
@@ -273,7 +268,6 @@ export default function QualyAIPage() {
           </div>
         </header>
 
-        {/* Núcleo central */}
         <div className="flex-1 flex flex-col items-center justify-center px-4 relative overflow-hidden">
           <div
             className="pointer-events-none absolute inset-0 opacity-40"
@@ -311,7 +305,6 @@ export default function QualyAIPage() {
             </p>
           )}
 
-          {/* Último mensaje Qualy (burbuja estilo ELYRA) */}
           {messages.length > 0 && status !== "listening" && (
             <div className="relative z-10 mt-6 max-w-md w-full">
               {(() => {
@@ -335,7 +328,6 @@ export default function QualyAIPage() {
           )}
         </div>
 
-        {/* Barra de entrada */}
         <div className="shrink-0 px-4 sm:px-6 pb-5 pt-2">
           <form
             onSubmit={handleSend}
