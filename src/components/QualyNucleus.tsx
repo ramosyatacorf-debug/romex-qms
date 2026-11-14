@@ -20,7 +20,7 @@ function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
 }
 
-/** Núcleo 3D interactivo inspirado en ELYRA — canvas puro, sin dependencias extra */
+/** Núcleo 3D estilo ELYRA, contraste alto para fondo claro RomEx */
 export default function QualyNucleus({
   speaking = false,
   listening = false,
@@ -51,7 +51,7 @@ export default function QualyNucleus({
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const points: Point3D[] = [];
-    const count = 160;
+    const count = 200;
     const golden = Math.PI * (3 - Math.sqrt(5));
     for (let i = 0; i < count; i++) {
       const y = 1 - (i / (count - 1)) * 2;
@@ -66,13 +66,13 @@ export default function QualyNucleus({
     }
     pointsRef.current = points;
 
-    // Paleta Qualy (azul laboratorio)
+    // Azul más saturado para que se note en fondo claro
     const C = {
-      core: "59, 130, 246",
-      mid: "96, 165, 250",
-      soft: "147, 197, 253",
-      center: "239, 246, 255",
-      think: "167, 139, 250",
+      core: "37, 99, 235",
+      mid: "59, 130, 246",
+      soft: "96, 165, 250",
+      center: "255, 255, 255",
+      think: "124, 58, 237",
     };
 
     const project = (p: Point3D, rotY: number, rotX: number) => {
@@ -81,7 +81,7 @@ export default function QualyNucleus({
       const y = p.oy;
       const y2 = y * Math.cos(rotX) - z * Math.sin(rotX);
       const z2 = y * Math.sin(rotX) + z * Math.cos(rotX);
-      const scale = size * 0.34;
+      const scale = size * 0.36;
       const perspective = 700 / (700 + z2 * scale);
       return {
         sx: size / 2 + x * scale * perspective,
@@ -107,7 +107,7 @@ export default function QualyNucleus({
       sm.thinkPulse = lerp(sm.thinkPulse, targetThink, 0.07);
       sm.coreBoost = lerp(
         sm.coreBoost,
-        targetSpeak * 0.7 + targetListen * 0.45 + targetThink * 0.55,
+        targetSpeak * 0.75 + targetListen * 0.5 + targetThink * 0.6,
         0.07
       );
 
@@ -115,47 +115,48 @@ export default function QualyNucleus({
       const listen = sm.listenGlow;
       const think = sm.thinkPulse;
 
-      rotRef.current.y += 0.0026 + act * 0.008 + think * 0.004;
-      rotRef.current.x = 0.2 + Math.sin(t * 0.3) * 0.022 + listen * 0.018;
+      // Siempre rota un poco más para que se note vivo en idle
+      rotRef.current.y += 0.004 + act * 0.01 + think * 0.005;
+      rotRef.current.x = 0.2 + Math.sin(t * 0.35) * 0.03 + listen * 0.02;
 
       ctx.clearRect(0, 0, size, size);
 
       const coreRgb = think > 0.3 ? C.think : C.core;
       const midRgb = think > 0.3 ? "139, 92, 246" : C.mid;
 
-      // Atmósfera
-      const atmosA = 0.06 + act * 0.14 + listen * 0.1 + think * 0.08;
+      // Atmósfera más fuerte (fondo claro)
+      const atmosA = 0.18 + act * 0.22 + listen * 0.14 + think * 0.12;
       const outer = ctx.createRadialGradient(
         size / 2,
         size / 2,
-        size * 0.04,
+        size * 0.02,
         size / 2,
         size / 2,
-        size * 0.5
+        size * 0.48
       );
-      outer.addColorStop(0, `rgba(${midRgb}, ${atmosA * 0.75})`);
-      outer.addColorStop(0.25, `rgba(${coreRgb}, ${atmosA * 0.45})`);
-      outer.addColorStop(0.55, `rgba(${coreRgb}, ${atmosA * 0.14})`);
+      outer.addColorStop(0, `rgba(${midRgb}, ${Math.min(0.55, atmosA * 0.9)})`);
+      outer.addColorStop(0.3, `rgba(${coreRgb}, ${Math.min(0.35, atmosA * 0.55)})`);
+      outer.addColorStop(0.6, `rgba(${coreRgb}, ${atmosA * 0.18})`);
       outer.addColorStop(1, "transparent");
       ctx.fillStyle = outer;
       ctx.fillRect(0, 0, size, size);
 
       if (listen > 0.02) {
-        const haloR = size * (0.36 + Math.sin(t * 1.8) * 0.012);
+        const haloR = size * (0.38 + Math.sin(t * 1.8) * 0.015);
         const halo = ctx.createRadialGradient(
           size / 2,
           size / 2,
-          haloR * 0.7,
+          haloR * 0.65,
           size / 2,
           size / 2,
-          haloR * 1.12
+          haloR * 1.15
         );
         halo.addColorStop(0, "transparent");
-        halo.addColorStop(0.7, `rgba(${C.core}, ${0.07 * listen})`);
+        halo.addColorStop(0.65, `rgba(${C.core}, ${0.2 * listen})`);
         halo.addColorStop(1, "transparent");
         ctx.fillStyle = halo;
         ctx.beginPath();
-        ctx.arc(size / 2, size / 2, haloR * 1.12, 0, Math.PI * 2);
+        ctx.arc(size / 2, size / 2, haloR * 1.15, 0, Math.PI * 2);
         ctx.fill();
       }
 
@@ -164,30 +165,30 @@ export default function QualyNucleus({
       );
       projected.sort((a, b) => a.depth - b.depth);
 
-      // Anillos orbitales
+      // Anillos más visibles
       for (let r = 0; r < 3; r++) {
         const ringR =
-          size * (0.26 + r * 0.055) + Math.sin(t * 1.0 + r * 0.9) * (1.5 + act * 3);
+          size * (0.27 + r * 0.055) + Math.sin(t * 1.0 + r * 0.9) * (2 + act * 4);
         ctx.beginPath();
         ctx.ellipse(
           size / 2,
           size / 2,
           ringR,
-          ringR * (0.16 + r * 0.02),
+          ringR * (0.17 + r * 0.02),
           Math.sin(t * 0.28 + r * 0.6) * (0.4 + act * 0.12),
           0,
           Math.PI * 2
         );
-        const ringA = 0.07 - r * 0.015 + act * 0.09;
-        ctx.strokeStyle = `rgba(${coreRgb}, ${Math.min(0.4, ringA)})`;
-        ctx.lineWidth = 1;
+        const ringA = 0.22 - r * 0.04 + act * 0.18;
+        ctx.strokeStyle = `rgba(${coreRgb}, ${Math.min(0.65, ringA)})`;
+        ctx.lineWidth = 1.4;
         ctx.stroke();
       }
 
-      // Enlaces de red
-      const maxDist = 0.36 + act * 0.1;
+      // Enlaces
+      const maxDist = 0.38 + act * 0.12;
       const n = pointsRef.current.length;
-      const maxLinks = act > 0.5 ? 3 : 2;
+      const maxLinks = act > 0.4 ? 4 : 3;
       for (let i = 0; i < n; i++) {
         let links = 0;
         for (let j = i + 1; j < n && links < maxLinks; j++) {
@@ -197,16 +198,16 @@ export default function QualyNucleus({
           const dy = a.oy - b.oy;
           const dz = a.oz - b.oz;
           const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-          if (dist < maxDist && dist > 0.1) {
+          if (dist < maxDist && dist > 0.08) {
             const pa = projected[i];
             const pb = projected[j];
             if (pa.depth > -0.5 && pb.depth > -0.5) {
-              const alpha = (0.06 + act * 0.16) * (1 - dist / maxDist);
+              const alpha = (0.14 + act * 0.22) * (1 - dist / maxDist);
               ctx.beginPath();
               ctx.moveTo(pa.sx, pa.sy);
               ctx.lineTo(pb.sx, pb.sy);
-              ctx.strokeStyle = `rgba(${coreRgb}, ${Math.min(0.45, alpha)})`;
-              ctx.lineWidth = 0.7;
+              ctx.strokeStyle = `rgba(${coreRgb}, ${Math.min(0.55, alpha)})`;
+              ctx.lineWidth = 0.9;
               ctx.stroke();
               links++;
             }
@@ -214,51 +215,52 @@ export default function QualyNucleus({
         }
       }
 
-      // Puntos
+      // Puntos más opacos y grandes
       for (let i = 0; i < projected.length; i++) {
         const p = projected[i];
         const base = pointsRef.current[i];
         const pulse =
           0.75 + 0.25 * Math.sin(t * (thinking ? 3.2 : 1.8) + base.pulse);
-        const depthFactor = Math.max(0.15, (p.depth + 1) / 2);
-        const r = (1.15 + act * 0.65) * p.scale * pulse;
+        const depthFactor = Math.max(0.2, (p.depth + 1) / 2);
+        const r = (1.35 + act * 0.75) * p.scale * pulse;
 
         ctx.beginPath();
         ctx.arc(p.sx, p.sy, r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${think > 0.3 ? C.think : C.soft}, ${0.2 + depthFactor * 0.55})`;
+        const alpha = 0.35 + depthFactor * 0.55;
+        ctx.fillStyle = `rgba(${think > 0.3 ? C.think : C.mid}, ${Math.min(0.95, alpha)})`;
         ctx.fill();
       }
 
-      // Núcleo central
+      // Núcleo central fuerte
       const coreR =
-        14 + sm.coreBoost * 8 + Math.sin(t * (th ? 3.5 : 2.2)) * (1 + act * 1.8);
+        16 + sm.coreBoost * 10 + Math.sin(t * (th ? 3.5 : 2.2)) * (1.5 + act * 2);
       const core = ctx.createRadialGradient(
         size / 2,
         size / 2,
         0,
         size / 2,
         size / 2,
-        coreR * 2.8
+        coreR * 2.6
       );
-      core.addColorStop(0, `rgba(${C.center}, 0.9)`);
-      core.addColorStop(0.15, `rgba(${think > 0.3 ? C.think : C.soft}, 0.55)`);
-      core.addColorStop(0.4, `rgba(${coreRgb}, ${0.28 + act * 0.18})`);
-      core.addColorStop(0.7, `rgba(${coreRgb}, ${0.08 + act * 0.06})`);
+      core.addColorStop(0, `rgba(${C.center}, 1)`);
+      core.addColorStop(0.12, `rgba(${think > 0.3 ? C.think : C.soft}, 0.95)`);
+      core.addColorStop(0.32, `rgba(${coreRgb}, ${0.55 + act * 0.2})`);
+      core.addColorStop(0.55, `rgba(${coreRgb}, ${0.28 + act * 0.12})`);
+      core.addColorStop(0.8, `rgba(${coreRgb}, 0.1)`);
       core.addColorStop(1, "transparent");
 
       ctx.fillStyle = core;
       ctx.beginPath();
-      ctx.arc(size / 2, size / 2, coreR * 2.8, 0, Math.PI * 2);
+      ctx.arc(size / 2, size / 2, coreR * 2.6, 0, Math.PI * 2);
       ctx.fill();
 
-      if (act > 0.1) {
-        const pulseR = coreR * 1.6 + Math.sin(t * 3) * (3 + act * 2);
-        ctx.beginPath();
-        ctx.arc(size / 2, size / 2, pulseR, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(${midRgb}, ${(0.14 + act * 0.12) * act})`;
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
-      }
+      // Anillo de pulso
+      const pulseR = coreR * 1.7 + Math.sin(t * 2.8) * (4 + act * 3);
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, pulseR, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${midRgb}, ${0.22 + act * 0.25})`;
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
 
       rafRef.current = requestAnimationFrame(draw);
     };
@@ -276,8 +278,8 @@ export default function QualyNucleus({
         className="absolute inset-0 rounded-full pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 65%)",
-          filter: "blur(28px)",
+            "radial-gradient(circle, rgba(37, 99, 235, 0.22) 0%, rgba(59, 130, 246, 0.08) 45%, transparent 70%)",
+          filter: "blur(20px)",
         }}
       />
       <canvas ref={canvasRef} className="block relative z-10" />
