@@ -33,20 +33,13 @@ export default function LoginPage() {
       <div className="w-full max-w-[420px]">
         <div className="flex flex-col items-center mb-8">
           <Image
-            src="/logo_romex.svg"
+            src="/logo_romex.jpg"
             alt="RomEx Quality Management System"
-            width={168}
-            height={50}
-            className="object-contain h-12 w-auto"
-            style={{ mixBlendMode: "multiply" }}
+            width={220}
+            height={70}
+            className="object-contain h-16 w-auto"
             priority
           />
-          <p
-            className="mt-3 text-[12px] font-medium tracking-[0.08em] uppercase"
-            style={{ color: "var(--md-on-surface-variant)" }}
-          >
-            Quality Management System
-          </p>
         </div>
 
         <div

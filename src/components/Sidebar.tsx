@@ -298,12 +298,11 @@ export default function Sidebar({
         {!collapsed && (
           <Link href="/dashboard" className="flex-1 flex items-center min-w-0 py-1">
             <Image
-              src="/logo_romex.svg"
+              src="/logo_romex.jpg"
               alt="RomEx Quality Management System"
-              width={160}
-              height={44}
-              className="object-contain object-left w-full max-h-10"
-              style={{ mixBlendMode: "multiply" }}
+              width={180}
+              height={48}
+              className="object-contain object-left w-full max-h-11"
               priority
             />
           </Link>
