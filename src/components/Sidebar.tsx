@@ -298,7 +298,7 @@ export default function Sidebar({
         {!collapsed && (
           <Link href="/dashboard" className="flex-1 flex items-center min-w-0 py-1">
             <Image
-              src="/logo_romex.jpg"
+              src="/logo_romex.svg"
               alt="RomEx Quality Management System"
               width={180}
               height={48}
