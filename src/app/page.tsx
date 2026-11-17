@@ -33,7 +33,7 @@ export default function LoginPage() {
       <div className="w-full max-w-[420px]">
         <div className="flex flex-col items-center mb-8">
           <Image
-            src="/logo_romex.jpg"
+            src="/logo_romex.svg"
             alt="RomEx Quality Management System"
             width={220}
             height={70}
