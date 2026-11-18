@@ -60,6 +60,31 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
+/** Abre el PDF de forma segura usando Blob URL (evita document.write + data-URL largo). */
+function openPdf(g: Guia) {
+  try {
+    const base64 = g.fileData.split(",")[1] || g.fileData;
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, "_blank", "noopener,noreferrer");
+    if (win) {
+      // Liberar el object URL después de un tiempo razonable
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } else {
+      URL.revokeObjectURL(url);
+      alert("No se pudo abrir el visor. Permite ventanas emergentes para este sitio.");
+    }
+  } catch {
+    alert("No se pudo visualizar el PDF. El archivo puede estar dañado.");
+  }
+}
+
 export default function GuiasPage() {
   const [guias, setGuias] = useState<Guia[]>([]);
   const [vista, setVista] = useState<Vista>("inicio");
@@ -150,15 +175,6 @@ export default function GuiasPage() {
     saveGuias(next);
     setGuias(next);
     if (selected?.id === id) setSelected(null);
-  }
-
-  function openPdf(g: Guia) {
-    const win = window.open();
-    if (win) {
-      win.document.write(
-        `<iframe src="${g.fileData}" style="width:100%;height:100%;border:none" title="${g.fileName}"></iframe>`
-      );
-    }
   }
 
   return (

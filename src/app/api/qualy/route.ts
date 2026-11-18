@@ -14,8 +14,20 @@ function clientKey(req: NextRequest) {
   );
 }
 
+function cleanupRateMap() {
+  const now = Date.now();
+  for (const [key, entry] of rateMap.entries()) {
+    if (now > entry.resetAt) {
+      rateMap.delete(key);
+    }
+  }
+}
+
 function checkRateLimit(key: string): boolean {
   const now = Date.now();
+  // Limpieza periódica ligera para evitar crecimiento indefinido del Map
+  if (rateMap.size > 200) cleanupRateMap();
+
   const entry = rateMap.get(key);
   if (!entry || now > entry.resetAt) {
     rateMap.set(key, { count: 1, resetAt: now + RATE_WINDOW_MS });
