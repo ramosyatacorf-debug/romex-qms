@@ -149,6 +149,7 @@ function useClock() {
 
 export default function MicrobiologiaHubPage() {
   const now = useClock();
+  const [toast, setToast] = useState("");
   const fecha = now.toLocaleDateString("es-PE", {
     day: "2-digit",
     month: "long",
@@ -160,6 +161,11 @@ export default function MicrobiologiaHubPage() {
     second: "2-digit",
     hour12: false,
   });
+
+  const showSoon = (label: string) => {
+    setToast(`${label} estará disponible próximamente.`);
+    setTimeout(() => setToast(""), 2800);
+  };
 
   return (
     <div className="min-h-screen flex bg-[#eef3fb]">
@@ -179,9 +185,9 @@ export default function MicrobiologiaHubPage() {
         <nav className="flex-1 px-3 space-y-0.5">
           <SideItem href="/dashboard/microbiologia" icon={<Home size={17} />} label="Inicio" active />
           <SideItem href="/dashboard/microbiologia" icon={<LayoutGrid size={17} />} label="Módulos" chevron />
-          <SideItem href="#" icon={<Settings size={17} />} label="Configuración" />
-          <SideItem href="#" icon={<BarChart3 size={17} />} label="Reportes" />
-          <SideItem href="#" icon={<Info size={17} />} label="Acerca de" />
+          <SideItem onSoon={() => showSoon("Configuración")} icon={<Settings size={17} />} label="Configuración" />
+          <SideItem onSoon={() => showSoon("Reportes")} icon={<BarChart3 size={17} />} label="Reportes" />
+          <SideItem onSoon={() => showSoon("Acerca de")} icon={<Info size={17} />} label="Acerca de" />
           <div className="pt-2">
             <SideItem href="/dashboard" icon={<LogOut size={17} />} label="Salir" />
           </div>
@@ -254,6 +260,18 @@ export default function MicrobiologiaHubPage() {
           </span>
         </footer>
       </div>
+
+      {toast && (
+        <div
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-full text-[13px] font-medium shadow-lg"
+          style={{
+            background: "var(--md-secondary-container)",
+            color: "var(--md-on-secondary-container)",
+          }}
+        >
+          {toast}
+        </div>
+      )}
     </div>
   );
 }
@@ -264,25 +282,40 @@ function SideItem({
   label,
   active,
   chevron,
+  onSoon,
 }: {
-  href: string;
+  href?: string;
   icon: React.ReactNode;
   label: string;
   active?: boolean;
   chevron?: boolean;
+  onSoon?: () => void;
 }) {
-  return (
-    <Link
-      href={href}
-      className={`flex items-center gap-2.5 h-10 px-3 rounded-xl text-[13px] font-medium transition-colors ${
-        active
-          ? "bg-sky-50 text-sky-700"
-          : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
-      }`}
-    >
+  const className = `flex items-center gap-2.5 h-10 px-3 rounded-xl text-[13px] font-medium transition-colors w-full text-left ${
+    active
+      ? "bg-sky-50 text-sky-700"
+      : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+  }`;
+
+  const inner = (
+    <>
       <span className={active ? "text-sky-600" : "text-slate-400"}>{icon}</span>
       <span className="flex-1">{label}</span>
       {chevron && <ChevronDown size={14} className="text-slate-300" />}
+    </>
+  );
+
+  if (onSoon) {
+    return (
+      <button type="button" onClick={onSoon} className={className}>
+        {inner}
+      </button>
+    );
+  }
+
+  return (
+    <Link href={href || "#"} className={className}>
+      {inner}
     </Link>
   );
 }
