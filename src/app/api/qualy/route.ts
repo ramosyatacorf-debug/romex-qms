@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { qualyThink } from "@/lib/qualy-brain";
+import { getQualyMode, qualyRespond } from "@/lib/qualy-provider";
 
 const MAX_MESSAGE_LENGTH = 2000;
 const rateMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 30; // requests
-const RATE_WINDOW_MS = 60_000; // per minute
+const RATE_LIMIT = 30;
+const RATE_WINDOW_MS = 60_000;
 
 function clientKey(req: NextRequest) {
   return (
@@ -17,15 +17,12 @@ function clientKey(req: NextRequest) {
 function cleanupRateMap() {
   const now = Date.now();
   for (const [key, entry] of rateMap.entries()) {
-    if (now > entry.resetAt) {
-      rateMap.delete(key);
-    }
+    if (now > entry.resetAt) rateMap.delete(key);
   }
 }
 
 function checkRateLimit(key: string): boolean {
   const now = Date.now();
-  // Limpieza periódica ligera para evitar crecimiento indefinido del Map
   if (rateMap.size > 200) cleanupRateMap();
 
   const entry = rateMap.get(key);
@@ -75,13 +72,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Sanitización básica: rechazar caracteres de control
     if (/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(trimmed)) {
-      return NextResponse.json({ error: "Mensaje contiene caracteres no permitidos" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Mensaje contiene caracteres no permitidos" },
+        { status: 400 }
+      );
     }
 
-    const reply = qualyThink(trimmed);
-    return NextResponse.json({ reply });
+    const { reply, provider } = await qualyRespond(trimmed);
+    return NextResponse.json({ reply, provider });
   } catch (err) {
     console.error("[qualy] unexpected error", err);
     return NextResponse.json(
@@ -89,4 +88,17 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/** GET: estado del proveedor (sin secretos). Útil para verificar configuración. */
+export async function GET() {
+  const mode = getQualyMode();
+  return NextResponse.json({
+    status: "ok",
+    mode,
+    message:
+      mode === "azure"
+        ? "Qualy está usando Azure OpenAI."
+        : "Qualy está en modo local (configura AZURE_OPENAI_* para activar Azure).",
+  });
 }
