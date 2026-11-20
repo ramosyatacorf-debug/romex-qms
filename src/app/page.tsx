@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { Eye, EyeOff, Mail, Lock, ShieldCheck } from "lucide-react";
+import RomexLogo from "@/components/RomexLogo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,12 +32,11 @@ export default function LoginPage() {
     >
       <div className="w-full max-w-[420px]">
         <div className="flex flex-col items-center mb-8">
-          <Image
-            src="/logo_romex.jpg"
-            alt="RomEx Quality Management System"
+          <RomexLogo
             width={220}
             height={70}
-            className="object-contain h-16 w-auto"
+            className="h-16 w-auto"
+            blendWhite
             priority
           />
         </div>

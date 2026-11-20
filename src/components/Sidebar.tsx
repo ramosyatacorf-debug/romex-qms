@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Home,
@@ -19,6 +18,7 @@ import {
   Activity,
 } from "lucide-react";
 import QualyIcon from "@/components/QualyIcon";
+import RomexLogo from "@/components/RomexLogo";
 
 interface SidebarProps {
   userName?: string;
@@ -297,12 +297,11 @@ export default function Sidebar({
       >
         {!collapsed && (
           <Link href="/dashboard" className="flex-1 flex items-center min-w-0 py-1">
-            <Image
-              src="/logo_romex.jpg"
-              alt="RomEx Quality Management System"
+            <RomexLogo
               width={180}
               height={48}
-              className="object-contain object-left w-full max-h-11"
+              className="w-full max-h-11"
+              blendWhite
               priority
             />
           </Link>
