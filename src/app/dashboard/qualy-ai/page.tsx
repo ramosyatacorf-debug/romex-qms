@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Sidebar from "@/components/Sidebar";
 import QualyNucleus from "@/components/QualyNucleus";
 import QualyIcon from "@/components/QualyIcon";
-import { Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import { Mic, MicOff, Volume2, VolumeX, Send } from "lucide-react";
 
 type Status = "idle" | "listening" | "thinking" | "speaking";
 
@@ -30,7 +30,10 @@ async function askQualy(message: string): Promise<string> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message }),
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return data.error || `Error del servidor (${res.status}). Intenta de nuevo.`;
+    }
     return data.reply || "No pude responder en este momento.";
   } catch {
     return "Hubo un problema de conexión. Inténtalo de nuevo.";
@@ -42,6 +45,7 @@ export default function QualyAIPage() {
   const [status, setStatus] = useState<Status>("idle");
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [transcript, setTranscript] = useState("");
+  const [textInput, setTextInput] = useState("");
   const recognitionRef = useRef<any>(null);
   const statusRef = useRef<Status>("idle");
 
@@ -51,8 +55,10 @@ export default function QualyAIPage() {
 
   const respond = useCallback(
     async (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
       setStatus("thinking");
-      const reply = await askQualy(text);
+      const reply = await askQualy(trimmed);
       if (voiceEnabled) {
         setStatus("speaking");
         speak(reply, () => setStatus("idle"));
@@ -68,7 +74,7 @@ export default function QualyAIPage() {
       if (voiceEnabled) {
         setStatus("speaking");
         speak(
-          "Hola. Soy Qualy AI, asistente del laboratorio RomEx. Presiona el micrófono y habla conmigo.",
+          "Hola. Soy Qualy AI, asistente del laboratorio RomEx. Presiona el micrófono o escribe tu consulta.",
           () => setStatus("idle")
         );
       }
@@ -148,8 +154,17 @@ export default function QualyAIPage() {
     else if (status === "idle") startListening();
   };
 
+  const handleTextSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (status === "thinking" || status === "speaking") return;
+    const msg = textInput.trim();
+    if (!msg) return;
+    setTextInput("");
+    respond(msg);
+  };
+
   const statusLabel: Record<Status, string> = {
-    idle: "Toca el micrófono para hablar",
+    idle: "Toca el micrófono o escribe tu consulta",
     listening: "Escuchando...",
     thinking: "Pensando...",
     speaking: "Hablando...",
@@ -189,7 +204,7 @@ export default function QualyAIPage() {
           </button>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center px-6">
+        <div className="flex-1 flex flex-col items-center justify-center px-6 pb-4">
           <button
             type="button"
             onClick={toggleMic}
@@ -235,6 +250,25 @@ export default function QualyAIPage() {
               </>
             )}
           </button>
+
+          <form onSubmit={handleTextSubmit} className="mt-6 w-full max-w-md flex gap-2">
+            <input
+              type="text"
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              placeholder="Escribe tu consulta a Qualy..."
+              disabled={status === "thinking" || status === "speaking"}
+              className="flex-1 h-11 px-4 rounded-full border border-slate-200 text-[14px] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
+            />
+            <button
+              type="submit"
+              disabled={!textInput.trim() || status === "thinking" || status === "speaking"}
+              className="h-11 w-11 rounded-full bg-blue-600 text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+              title="Enviar"
+            >
+              <Send size={16} />
+            </button>
+          </form>
         </div>
 
         <p className="shrink-0 text-center text-[11px] text-slate-400 pb-4">
