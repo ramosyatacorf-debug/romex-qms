@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 
 interface RomexLogoProps {
   /** Ancho visual preferido */
@@ -19,7 +20,8 @@ interface RomexLogoProps {
 
 /**
  * Logo oficial RomEx (public/logo_romex.jpg).
- * Única fuente de verdad para Login, Sidebar y demás pantallas.
+ * Si el asset no está disponible (404), muestra un fallback textual limpio
+ * para no romper Login ni Sidebar.
  */
 export default function RomexLogo({
   width = 180,
@@ -28,6 +30,30 @@ export default function RomexLogo({
   blendWhite = true,
   priority = false,
 }: RomexLogoProps) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <div
+        className={`flex items-center gap-2 font-semibold tracking-tight ${className}`}
+        style={{ color: "var(--md-on-surface)", height }}
+        aria-label="RomEx Quality Management System"
+      >
+        <span
+          className="inline-flex items-center justify-center rounded-lg text-white text-sm font-bold"
+          style={{
+            width: Math.min(height, 40),
+            height: Math.min(height, 40),
+            background: "var(--md-primary)",
+          }}
+        >
+          R
+        </span>
+        <span className="text-[15px] leading-none">RomEx</span>
+      </div>
+    );
+  }
+
   return (
     <Image
       src="/logo_romex.jpg"
@@ -37,6 +63,7 @@ export default function RomexLogo({
       className={`object-contain object-left ${className}`}
       style={blendWhite ? { mixBlendMode: "multiply" } : undefined}
       priority={priority}
+      onError={() => setFailed(true)}
     />
   );
 }
