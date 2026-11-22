@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { FormEvent, ReactNode } from "react";
 import MicroShell from "@/components/MicroShell";
 import { ArrowLeft, Plus, Save, Trash2, Eye, Thermometer } from "lucide-react";
 import { safeGetJSON, safeSetJSON } from "@/lib/safe-storage";
@@ -111,7 +112,7 @@ function emptyLecturas(): Lectura[] {
 const inputClass =
   "w-full h-10 px-3 rounded-lg border border-slate-200 text-[13.5px] text-slate-800 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/10";
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
       <label className="block text-[12px] font-medium text-slate-600 mb-1">{label}</label>
@@ -145,7 +146,7 @@ export default function AmbientesPage() {
     });
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = (e: FormEvent) => {
     e.preventDefault();
     if (!fecha) return;
     setSaving(true);
