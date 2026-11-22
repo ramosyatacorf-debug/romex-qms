@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, ShieldCheck } from "lucide-react";
 import RomexLogo from "@/components/RomexLogo";
@@ -13,7 +14,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     if (!email.trim() || !password.trim()) {
