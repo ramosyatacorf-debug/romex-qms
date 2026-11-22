@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, LogOut, FlaskConical, ArrowLeft } from "lucide-react";
@@ -19,7 +20,7 @@ export default function MicroShell({
   title,
   code,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   title?: string;
   code?: string;
 }) {
