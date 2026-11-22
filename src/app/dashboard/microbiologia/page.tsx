@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import {
   Home,
@@ -30,7 +31,7 @@ interface Modulo {
   description: string;
   href: string;
   ready: boolean;
-  icon: React.ReactNode;
+  icon: ReactNode;
   iconBg: string;
   iconColor: string;
   arrowBg: string;
@@ -285,7 +286,7 @@ function SideItem({
   onSoon,
 }: {
   href?: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   active?: boolean;
   chevron?: boolean;
