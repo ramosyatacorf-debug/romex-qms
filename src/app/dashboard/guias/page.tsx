@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { FormEvent, ReactNode } from "react";
 import { safeGetJSON, safeSetJSON } from "@/lib/safe-storage";
 import Link from "next/link";
 import {
@@ -137,7 +138,7 @@ export default function GuiasPage() {
     return list.sort((a, b) => b.fechaRecepcion.localeCompare(a.fechaRecepcion));
   }, [guias, vista, anioSel, mesSel, busqueda]);
 
-  async function handleUpload(e: React.FormEvent) {
+  async function handleUpload(e: FormEvent) {
     e.preventDefault();
     if (!file || !numero.trim() || !fecha) return;
     setUploading(true);
@@ -361,7 +362,7 @@ export default function GuiasPage() {
   );
 }
 
-function Stat({ label, value, icon }: { label: string; value: number; icon: React.ReactNode }) {
+function Stat({ label, value, icon }: { label: string; value: number; icon: ReactNode }) {
   return (
     <div className="p-4 rounded-2xl border bg-white flex items-center gap-3" style={{ borderColor: "var(--md-outline-variant)" }}>
       <div className="text-[var(--md-primary)]">{icon}</div>
