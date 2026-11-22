@@ -23,21 +23,78 @@ function speak(text: string, onEnd?: () => void) {
   window.speechSynthesis.speak(u);
 }
 
-async function askQualy(message: string): Promise<string> {
-  try {
-    const res = await fetch("/api/qualy", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message }),
-    });
+/** Consume SSE de /api/qualy con stream:true */
+async function askQualyStream(
+  message: string,
+  onPartial: (text: string) => void
+): Promise<{ reply: string; provider: string; error?: string }> {
+  const res = await fetch("/api/qualy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, stream: true }),
+  });
+
+  if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      return data.error || `Error del servidor (${res.status}). Intenta de nuevo.`;
-    }
-    return data.reply || "No pude responder en este momento.";
-  } catch {
-    return "Hubo un problema de conexión. Inténtalo de nuevo.";
+    return {
+      reply: data.error || `Error del servidor (${res.status}).`,
+      provider: "error",
+      error: data.error,
+    };
   }
+
+  if (!res.body) {
+    return { reply: "Sin cuerpo de respuesta.", provider: "error", error: "empty body" };
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let full = "";
+  let provider = "azure";
+  let streamError: string | undefined;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const chunks = buffer.split("\n\n");
+    buffer = chunks.pop() || "";
+
+    for (const chunk of chunks) {
+      const line = chunk.trim();
+      if (!line.startsWith("data:")) continue;
+      const payload = line.slice(5).trim();
+      try {
+        const ev = JSON.parse(payload) as {
+          type: string;
+          content?: string;
+          provider?: string;
+          message?: string;
+          reason?: string;
+        };
+        if (ev.type === "meta" && ev.provider) provider = ev.provider;
+        if (ev.type === "token" && ev.content) {
+          full += ev.content;
+          onPartial(full);
+        }
+        if (ev.type === "fallback") {
+          provider = "local";
+          streamError = ev.reason;
+          full = "";
+          onPartial("");
+        }
+        if (ev.type === "done" && ev.provider) provider = ev.provider;
+        if (ev.type === "error") {
+          streamError = ev.message;
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  return { reply: full || streamError || "No pude responder.", provider, error: streamError };
 }
 
 export default function QualyAIPage() {
@@ -46,6 +103,7 @@ export default function QualyAIPage() {
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [transcript, setTranscript] = useState("");
   const [textInput, setTextInput] = useState("");
+  const [streamText, setStreamText] = useState("");
   const recognitionRef = useRef<any>(null);
   const statusRef = useRef<Status>("idle");
 
@@ -58,11 +116,26 @@ export default function QualyAIPage() {
       const trimmed = text.trim();
       if (!trimmed) return;
       setStatus("thinking");
-      const reply = await askQualy(trimmed);
-      if (voiceEnabled) {
-        setStatus("speaking");
-        speak(reply, () => setStatus("idle"));
-      } else {
+      setStreamText("");
+
+      try {
+        const { reply } = await askQualyStream(trimmed, (partial) => {
+          setStreamText(partial);
+          if (partial) setStatus("thinking");
+        });
+
+        setStreamText(reply);
+
+        if (voiceEnabled && reply) {
+          setStatus("speaking");
+          speak(reply, () => {
+            setStatus("idle");
+          });
+        } else {
+          setStatus("idle");
+        }
+      } catch {
+        setStreamText("Hubo un problema de conexión. Inténtalo de nuevo.");
         setStatus("idle");
       }
     },
@@ -166,7 +239,7 @@ export default function QualyAIPage() {
   const statusLabel: Record<Status, string> = {
     idle: "Toca el micrófono o escribe tu consulta",
     listening: "Escuchando...",
-    thinking: "Pensando...",
+    thinking: streamText ? "Respondiendo..." : "Pensando...",
     speaking: "Hablando...",
   };
 
@@ -225,6 +298,12 @@ export default function QualyAIPage() {
           {transcript && status === "listening" && (
             <p className="mt-2 text-[13px] text-slate-400 max-w-xs text-center italic">
               “{transcript}”
+            </p>
+          )}
+
+          {streamText && (status === "thinking" || status === "speaking" || status === "idle") && (
+            <p className="mt-4 text-[14px] text-slate-700 max-w-lg text-center leading-relaxed">
+              {streamText}
             </p>
           )}
 
