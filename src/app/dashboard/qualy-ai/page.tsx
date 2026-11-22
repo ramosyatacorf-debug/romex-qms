@@ -23,7 +23,6 @@ function speak(text: string, onEnd?: () => void) {
   window.speechSynthesis.speak(u);
 }
 
-/** Consume SSE de /api/qualy con stream:true */
 async function askQualyStream(
   message: string,
   onPartial: (text: string) => void
@@ -79,10 +78,9 @@ async function askQualyStream(
           onPartial(full);
         }
         if (ev.type === "fallback") {
-          provider = "local";
+          if (ev.provider) provider = ev.provider;
           streamError = ev.reason;
-          full = "";
-          onPartial("");
+          // no borrar full si el fallback ya trae tokens Azure JSON
         }
         if (ev.type === "done" && ev.provider) provider = ev.provider;
         if (ev.type === "error") {
@@ -94,7 +92,11 @@ async function askQualyStream(
     }
   }
 
-  return { reply: full || streamError || "No pude responder.", provider, error: streamError };
+  return {
+    reply: full || streamError || "No pude responder.",
+    provider,
+    error: streamError,
+  };
 }
 
 export default function QualyAIPage() {
@@ -104,6 +106,7 @@ export default function QualyAIPage() {
   const [transcript, setTranscript] = useState("");
   const [textInput, setTextInput] = useState("");
   const [streamText, setStreamText] = useState("");
+  const [providerLabel, setProviderLabel] = useState("");
   const recognitionRef = useRef<any>(null);
   const statusRef = useRef<Status>("idle");
 
@@ -117,25 +120,34 @@ export default function QualyAIPage() {
       if (!trimmed) return;
       setStatus("thinking");
       setStreamText("");
+      setProviderLabel("");
 
       try {
-        const { reply } = await askQualyStream(trimmed, (partial) => {
+        const { reply, provider, error } = await askQualyStream(trimmed, (partial) => {
           setStreamText(partial);
           if (partial) setStatus("thinking");
         });
 
         setStreamText(reply);
+        setProviderLabel(
+          provider === "azure"
+            ? "Azure OpenAI"
+            : provider === "local"
+              ? error
+                ? `Local (Azure: ${error.slice(0, 80)})`
+                : "Local"
+              : provider
+        );
 
         if (voiceEnabled && reply) {
           setStatus("speaking");
-          speak(reply, () => {
-            setStatus("idle");
-          });
+          speak(reply, () => setStatus("idle"));
         } else {
           setStatus("idle");
         }
       } catch {
         setStreamText("Hubo un problema de conexión. Inténtalo de nuevo.");
+        setProviderLabel("error");
         setStatus("idle");
       }
     },
@@ -301,10 +313,14 @@ export default function QualyAIPage() {
             </p>
           )}
 
-          {streamText && (status === "thinking" || status === "speaking" || status === "idle") && (
-            <p className="mt-4 text-[14px] text-slate-700 max-w-lg text-center leading-relaxed">
+          {streamText && (
+            <p className="mt-4 text-[14px] text-slate-700 max-w-lg text-center leading-relaxed whitespace-pre-wrap">
               {streamText}
             </p>
+          )}
+
+          {providerLabel && (
+            <p className="mt-2 text-[11px] text-slate-400">Fuente: {providerLabel}</p>
           )}
 
           <button

@@ -1,7 +1,7 @@
 /**
  * Qualy AI — orquestador
- * - respond(): JSON completo
- * - respondStream(): tokens vía callbacks (Azure stream o local en un chunk)
+ * Orden: Azure stream → Azure JSON → local (solo si Azure no responde)
+ * Nunca oculta el error de Azure al usuario.
  */
 
 import { qualyThink } from "@/lib/qualy-brain";
@@ -16,7 +16,6 @@ export type QualyProvider = "azure" | "local";
 export interface QualyResponse {
   reply: string;
   provider: QualyProvider;
-  /** Solo si Azure falló y se usó local */
   azureError?: string;
 }
 
@@ -26,11 +25,14 @@ export async function qualyRespond(message: string): Promise<QualyResponse> {
     if (azure.ok) {
       return { reply: azure.reply, provider: "azure" };
     }
-    console.warn("[qualy] Azure falló, fallback local:", azure.error, azure.body);
+    const err =
+      azure.error + (azure.status ? ` (HTTP ${azure.status})` : "") +
+      (azure.body ? ` — ${azure.body.slice(0, 200)}` : "");
+    console.warn("[qualy] Azure JSON falló:", err);
     return {
-      reply: qualyThink(message),
+      reply: `No pude usar Azure OpenAI: ${azure.error}. Revisa deployment, clave y cuota (Students suele limitar TPM). Detalle en consola del servidor.`,
       provider: "local",
-      azureError: azure.error + (azure.body ? ` | ${azure.body}` : ""),
+      azureError: err,
     };
   }
 
@@ -42,7 +44,7 @@ export type StreamEvent =
   | { type: "token"; content: string }
   | { type: "done"; provider: QualyProvider }
   | { type: "error"; message: string; detail?: string }
-  | { type: "fallback"; reason: string; provider: "local" };
+  | { type: "fallback"; reason: string; provider: QualyProvider };
 
 export async function qualyRespondStream(
   message: string,
@@ -50,8 +52,7 @@ export async function qualyRespondStream(
 ): Promise<void> {
   if (!isAzureConfigured()) {
     emit({ type: "meta", provider: "local" });
-    const reply = qualyThink(message);
-    emit({ type: "token", content: reply });
+    emit({ type: "token", content: qualyThink(message) });
     emit({ type: "done", provider: "local" });
     return;
   }
@@ -59,7 +60,7 @@ export async function qualyRespondStream(
   emit({ type: "meta", provider: "azure" });
 
   let gotToken = false;
-  let azureFailed = false;
+  let streamFailed = false;
   let failMsg = "";
   let failDetail = "";
 
@@ -69,31 +70,53 @@ export async function qualyRespondStream(
       emit({ type: "token", content: text });
     },
     onDone: (full) => {
-      if (!gotToken && !full) {
-        azureFailed = true;
-        failMsg = "Azure no envió tokens";
+      if (!gotToken && !full.trim()) {
+        streamFailed = true;
+        failMsg = "Azure stream no envió contenido";
       } else {
         emit({ type: "done", provider: "azure" });
       }
     },
-    onError: (message, detail) => {
-      azureFailed = true;
-      failMsg = message;
+    onError: (msg, detail) => {
+      streamFailed = true;
+      failMsg = msg;
       failDetail = detail || "";
     },
   });
 
-  if (azureFailed) {
-    console.warn("[qualy] stream Azure falló → local:", failMsg, failDetail);
+  if (!streamFailed) return;
+
+  // 2º intento: Azure sin streaming (más compatible con cuotas Students)
+  console.warn("[qualy] stream falló, reintento JSON:", failMsg, failDetail);
+  const azure = await qualyAzureThink(message);
+  if (azure.ok) {
     emit({
       type: "fallback",
-      reason: failDetail ? `${failMsg}: ${failDetail}` : failMsg,
-      provider: "local",
+      reason: `Stream falló (${failMsg}); respuesta por JSON.`,
+      provider: "azure",
     });
-    const reply = qualyThink(message);
-    emit({ type: "token", content: reply });
-    emit({ type: "done", provider: "local" });
+    emit({ type: "token", content: azure.reply });
+    emit({ type: "done", provider: "azure" });
+    return;
   }
+
+  const reason =
+    failDetail ||
+    azure.body ||
+    azure.error ||
+    failMsg ||
+    "Error desconocido de Azure";
+
+  console.error("[qualy] Azure total fail:", reason);
+  emit({ type: "fallback", reason, provider: "local" });
+  emit({
+    type: "token",
+    content:
+      `Azure OpenAI no respondió: ${azure.error || failMsg}. ` +
+      `Si usas Azure for Students, la cuota (TPM) puede estar agotada o el deployment mal nombrado. ` +
+      `Revisa la terminal del servidor (npm run dev) para el detalle HTTP.`,
+  });
+  emit({ type: "done", provider: "local" });
 }
 
 export function getQualyMode(): QualyProvider {
