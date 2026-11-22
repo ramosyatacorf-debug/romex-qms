@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -37,8 +38,8 @@ function NavLink({
   href: string;
   active: boolean;
   collapsed: boolean;
-  icon: React.ReactNode;
-  children: React.ReactNode;
+  icon: ReactNode;
+  children: ReactNode;
   external?: boolean;
 }) {
   const className = `flex items-center gap-3 px-3 py-2.5 text-[13.5px] font-medium transition-colors ${
