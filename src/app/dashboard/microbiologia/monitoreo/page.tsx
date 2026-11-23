@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
 import MicroShell from "@/components/MicroShell";
 import { ArrowLeft, Plus, Save, Trash2, Eye, Activity, CheckCircle2 } from "lucide-react";
 import { safeGetJSON, safeSetJSON } from "@/lib/safe-storage";
@@ -140,7 +141,7 @@ export default function MonitoreoPage() {
     });
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = (e: FormEvent) => {
     e.preventDefault();
     if (!fecha) return;
     setSaving(true);
@@ -474,4 +475,3 @@ export default function MonitoreoPage() {
     </MicroShell>
   );
 }
-
