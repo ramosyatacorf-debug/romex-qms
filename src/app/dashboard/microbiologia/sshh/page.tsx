@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
 import MicroShell from "@/components/MicroShell";
 import {
   Field,
@@ -99,7 +100,7 @@ export default function SshhPage() {
     setChecks((prev) => prev.map((c) => (c.id === id ? { ...c, estado } : c)));
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = (e: FormEvent) => {
     e.preventDefault();
     if (!fecha) return;
     setSaving(true);

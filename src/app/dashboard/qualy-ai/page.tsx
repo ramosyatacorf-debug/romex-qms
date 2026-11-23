@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import type { FormEvent } from "react";
 import Sidebar from "@/components/Sidebar";
 import QualyNucleus from "@/components/QualyNucleus";
 import QualyIcon from "@/components/QualyIcon";
@@ -239,7 +240,7 @@ export default function QualyAIPage() {
     else if (status === "idle") startListening();
   };
 
-  const handleTextSubmit = (e: React.FormEvent) => {
+  const handleTextSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (status === "thinking" || status === "speaking") return;
     const msg = textInput.trim();
