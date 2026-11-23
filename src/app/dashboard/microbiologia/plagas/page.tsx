@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
 import MicroShell from "@/components/MicroShell";
 import {
   Field,
@@ -77,7 +78,7 @@ export default function PlagasPage() {
     };
   }, [items]);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = (e: FormEvent) => {
     e.preventDefault();
     if (!fecha || !area) return;
     setSaving(true);
