@@ -168,6 +168,10 @@ export default function MicrobiologiaHubPage() {
     setTimeout(() => setToast(""), 2800);
   };
 
+  const scrollToModules = () => {
+    document.getElementById("modulos-grid")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <div className="min-h-screen flex bg-[#eef3fb]">
       <aside className="hidden md:flex w-[232px] shrink-0 flex-col bg-white border-r border-slate-200/80">
@@ -185,7 +189,7 @@ export default function MicrobiologiaHubPage() {
 
         <nav className="flex-1 px-3 space-y-0.5">
           <SideItem href="/dashboard/microbiologia" icon={<Home size={17} />} label="Inicio" active />
-          <SideItem href="/dashboard/microbiologia" icon={<LayoutGrid size={17} />} label="Módulos" chevron />
+          <SideItem onSoon={scrollToModules} icon={<LayoutGrid size={17} />} label="Módulos" />
           <SideItem onSoon={() => showSoon("Configuración")} icon={<Settings size={17} />} label="Configuración" />
           <SideItem onSoon={() => showSoon("Reportes")} icon={<BarChart3 size={17} />} label="Reportes" />
           <SideItem onSoon={() => showSoon("Acerca de")} icon={<Info size={17} />} label="Acerca de" />
@@ -245,7 +249,7 @@ export default function MicrobiologiaHubPage() {
               Seleccione el módulo que desea gestionar:
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div id="modulos-grid" className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {MODULOS.map((m) => (
                 <ModuloCard key={m.id} modulo={m} />
               ))}
@@ -269,6 +273,8 @@ export default function MicrobiologiaHubPage() {
             background: "var(--md-secondary-container)",
             color: "var(--md-on-secondary-container)",
           }}
+          role="status"
+          aria-live="polite"
         >
           {toast}
         </div>
