@@ -1,8 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import Sidebar from "@/components/Sidebar";
 import ModuleCard from "@/components/ModuleCard";
+import { safeGetJSON } from "@/lib/safe-storage";
+import { FileText, Microscope, Sparkles, FlaskConical } from "lucide-react";
 
 function greeting() {
   const h = new Date().getHours();
@@ -25,13 +28,36 @@ export default function DashboardPage() {
   const saludo = useMemo(() => greeting(), []);
   const fecha = useMemo(() => todayLabel(), []);
 
+  const [guiasCount, setGuiasCount] = useState(0);
+  const [microCount, setMicroCount] = useState(0);
+
+  useEffect(() => {
+    const guias = safeGetJSON<unknown[]>("romex_guias_remision", []);
+    setGuiasCount(Array.isArray(guias) ? guias.length : 0);
+
+    const keys = [
+      "romex_enterobacterias",
+      "romex_ambientes",
+      "romex_sshh",
+      "romex_plagas",
+      "romex_almacenes",
+      "romex_monitoreo",
+    ];
+    let total = 0;
+    for (const k of keys) {
+      const arr = safeGetJSON<unknown[]>(k, []);
+      if (Array.isArray(arr)) total += arr.length;
+    }
+    setMicroCount(total);
+  }, []);
+
   return (
     <div className="flex min-h-screen" style={{ background: "var(--md-surface)" }}>
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
       <main className="flex-1 flex flex-col min-w-0">
         <div className="flex-1 px-6 py-8 md:px-10 md:py-10">
-          <header className="mb-10 max-w-3xl">
+          <header className="mb-8 max-w-3xl">
             <p
               className="text-[11px] font-medium tracking-[0.08em] uppercase mb-2"
               style={{ color: "var(--md-on-surface-variant)" }}
@@ -57,6 +83,41 @@ export default function DashboardPage() {
               Elige un sistema. Cada uno se abre de forma independiente con su propia interfaz.
             </p>
           </header>
+
+          <section className="mb-10 max-w-5xl">
+            <h2
+              className="text-[12px] font-medium uppercase tracking-[0.08em] mb-4"
+              style={{ color: "var(--md-on-surface-variant)" }}
+            >
+              Estado del ecosistema
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <StatusCard
+                icon={<Microscope size={18} />}
+                label="Registros Micro"
+                value={microCount}
+                hint="en este dispositivo"
+              />
+              <StatusCard
+                icon={<FileText size={18} />}
+                label="Guías de remisión"
+                value={guiasCount}
+                hint="archivos PDF"
+              />
+              <StatusCard
+                icon={<Sparkles size={18} />}
+                label="Qualy AI"
+                value="Local"
+                hint="sin Azure configurado"
+              />
+              <StatusCard
+                icon={<FlaskConical size={18} />}
+                label="Físico Químico"
+                value="—"
+                hint="en preparación"
+              />
+            </div>
+          </section>
 
           <section>
             <div className="flex items-center justify-between gap-3 mb-4">
@@ -119,6 +180,36 @@ export default function DashboardPage() {
           Exportadora RomEx S.A. — Quality Management System
         </footer>
       </main>
+    </div>
+  );
+}
+
+function StatusCard({
+  icon,
+  label,
+  value,
+  hint,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: number | string;
+  hint: string;
+}) {
+  return (
+    <div
+      className="p-4 rounded-2xl border bg-white flex flex-col gap-1"
+      style={{ borderColor: "color-mix(in srgb, var(--md-outline-variant) 60%, transparent)" }}
+    >
+      <div className="flex items-center gap-2 text-[var(--md-primary)]">{icon}</div>
+      <p className="text-[22px] font-semibold leading-none mt-1" style={{ color: "var(--md-on-surface)" }}>
+        {typeof value === "number" ? value.toLocaleString() : value}
+      </p>
+      <p className="text-[12.5px] font-medium" style={{ color: "var(--md-on-surface)" }}>
+        {label}
+      </p>
+      <p className="text-[11px]" style={{ color: "var(--md-on-surface-variant)" }}>
+        {hint}
+      </p>
     </div>
   );
 }
