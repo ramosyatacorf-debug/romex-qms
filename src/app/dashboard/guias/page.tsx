@@ -45,11 +45,7 @@ const MESES = [
 const STORAGE_KEY = "romex_guias_remision";
 
 function saveGuias(guias: Guia[]) {
-  const res = safeSetJSON(STORAGE_KEY, guias);
-  if (!res.ok) {
-    alert(res.error || "No se pudo guardar. El PDF puede ser muy grande.");
-    throw new Error("storage");
-  }
+  return safeSetJSON(STORAGE_KEY, guias);
 }
 
 function fileToBase64(file: File): Promise<string> {
@@ -95,6 +91,7 @@ export default function GuiasPage() {
   const [showUpload, setShowUpload] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selected, setSelected] = useState<Guia | null>(null);
+  const [saveError, setSaveError] = useState("");
 
   // Form upload
   const [numero, setNumero] = useState("");
@@ -142,6 +139,7 @@ export default function GuiasPage() {
     e.preventDefault();
     if (!file || !numero.trim() || !fecha) return;
     setUploading(true);
+    setSaveError("");
     try {
       const data = await fileToBase64(file);
       const d = new Date(fecha);
@@ -159,12 +157,16 @@ export default function GuiasPage() {
         createdAt: new Date().toISOString(),
       };
       const next = [nueva, ...guias];
-      saveGuias(next);
+      const res = saveGuias(next);
+      if (!res.ok) {
+        setSaveError(res.error || "No se pudo guardar. El PDF puede ser muy grande.");
+        return;
+      }
       setGuias(next);
       setShowUpload(false);
       setNumero(""); setZona(""); setSacos(""); setKilos(""); setFecha(""); setFile(null);
     } catch {
-      /* alert already shown in saveGuias */
+      setSaveError("Error al procesar el archivo.");
     } finally {
       setUploading(false);
     }
@@ -173,7 +175,11 @@ export default function GuiasPage() {
   function handleDelete(id: string) {
     if (!confirm("¿Eliminar esta guía de remisión?")) return;
     const next = guias.filter((g) => g.id !== id);
-    saveGuias(next);
+    const res = saveGuias(next);
+    if (!res.ok) {
+      alert(res.error || "No se pudo eliminar.");
+      return;
+    }
     setGuias(next);
     if (selected?.id === id) setSelected(null);
   }
@@ -206,6 +212,11 @@ export default function GuiasPage() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6">
+        {saveError && (
+          <p className="mb-4 text-[13px] text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+            {saveError}
+          </p>
+        )}
         <div className="flex flex-wrap gap-2 mb-6">
           <button
             type="button"
@@ -338,10 +349,15 @@ export default function GuiasPage() {
           <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-[18px] font-medium">Subir guía de remisión</h2>
-              <button type="button" onClick={() => setShowUpload(false)} className="p-1 rounded-full hover:bg-slate-100">
+              <button type="button" onClick={() => { setShowUpload(false); setSaveError(""); }} className="p-1 rounded-full hover:bg-slate-100">
                 <X size={18} />
               </button>
             </div>
+            {saveError && (
+              <p className="mb-3 text-[13px] text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                {saveError}
+              </p>
+            )}
             <form onSubmit={handleUpload} className="space-y-3">
               <input required value={numero} onChange={(e) => setNumero(e.target.value)} placeholder="Número de guía" className="md-field w-full" />
               <input value={zona} onChange={(e) => setZona(e.target.value)} placeholder="Zona" className="md-field w-full" />

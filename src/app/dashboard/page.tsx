@@ -30,6 +30,7 @@ export default function DashboardPage() {
 
   const [guiasCount, setGuiasCount] = useState(0);
   const [microCount, setMicroCount] = useState(0);
+  const [qualyMode, setQualyMode] = useState<string>("Local");
 
   useEffect(() => {
     const guias = safeGetJSON<unknown[]>("romex_guias_remision", []);
@@ -49,6 +50,15 @@ export default function DashboardPage() {
       if (Array.isArray(arr)) total += arr.length;
     }
     setMicroCount(total);
+
+    // Modo real de Qualy
+    fetch("/api/qualy")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.mode === "azure") setQualyMode("Azure");
+        else setQualyMode("Local");
+      })
+      .catch(() => setQualyMode("Local"));
   }, []);
 
   return (
@@ -107,8 +117,8 @@ export default function DashboardPage() {
               <StatusCard
                 icon={<Sparkles size={18} />}
                 label="Qualy AI"
-                value="Local"
-                hint="sin Azure configurado"
+                value={qualyMode}
+                hint={qualyMode === "Azure" ? "Azure OpenAI" : "sin Azure configurado"}
               />
               <StatusCard
                 icon={<FlaskConical size={18} />}
